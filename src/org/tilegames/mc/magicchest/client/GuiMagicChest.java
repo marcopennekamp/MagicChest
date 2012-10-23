@@ -2,15 +2,21 @@ package org.tilegames.mc.magicchest.client;
 
 import org.lwjgl.opengl.GL11;
 import org.tilegames.mc.magicchest.ContainerMagicChest;
+import org.tilegames.mc.magicchest.TileEntityMagicChest;
+
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
 
 import net.minecraft.src.GuiContainer;
 import net.minecraft.src.IInventory;
 
-
+@SideOnly(Side.CLIENT)
 public class GuiMagicChest extends GuiContainer {
-
-    public GuiMagicChest (IInventory playerInventory, IInventory chestInventory) {
+    TileEntityMagicChest chest;
+    
+    public GuiMagicChest (IInventory playerInventory, TileEntityMagicChest chestInventory) {
         super (new ContainerMagicChest (playerInventory, chestInventory));
+        chest = chestInventory;
         ySize = 168;
     }
     

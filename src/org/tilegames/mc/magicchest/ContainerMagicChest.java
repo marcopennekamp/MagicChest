@@ -8,11 +8,11 @@ import net.minecraft.src.Slot;
 
 public class ContainerMagicChest extends Container {
     IInventory playerInventory;
-    IInventory chestInventory;
+    TileEntityMagicChest chestInventory;
     int rows;
     
     
-    public ContainerMagicChest (IInventory playerInventory, IInventory chestInventory) {
+    public ContainerMagicChest (IInventory playerInventory, TileEntityMagicChest chestInventory) {
         this.playerInventory = playerInventory;
         this.chestInventory = chestInventory;
         
@@ -40,17 +40,23 @@ public class ContainerMagicChest extends Container {
     
     @Override
     public ItemStack transferStackInSlot (int slotId) {
+        Slot slot = (Slot) inventorySlots.get (slotId);
         ItemStack itemStack = null;
-        Slot slot = (Slot) this.inventorySlots.get (slotId);
         
         if (slot != null && slot.getHasStack ()) {
             ItemStack slotItemStack = slot.getStack ();
-            itemStack = slotItemStack.copy ();
             
-            if (!mergeItemStack (slotItemStack, 0, rows * 9, false)) return null;
-            
-            if (slotItemStack.stackSize == 0) slot.putStack (null);
-            else slot.onSlotChanged ();
+            if (slotId >= 27) { /* Put from player inventory into chest. */
+                slotItemStack = chestInventory.processItemStack (slotItemStack, true);
+                if (slotItemStack == null) slot.putStack (null);
+                else slot.onSlotChanged ();
+                return null;
+            }else { /* Put from chest into player inventory. */
+                itemStack = slotItemStack.copy ();
+                if (!mergeItemStack (slotItemStack, 27, 27 + 36, false)) return null;
+                if (slotItemStack.stackSize == 0) slot.putStack (null);
+                else slot.onSlotChanged ();
+            }
         }
         
         return itemStack;
@@ -58,7 +64,7 @@ public class ContainerMagicChest extends Container {
     
     @Override
     public boolean canInteractWith (EntityPlayer player) {
-        return true;
+        return chestInventory.isUseableByPlayer (player);
     }
     
     @Override

@@ -4,21 +4,27 @@ import java.util.List;
 
 import org.tilegames.mc.magicchest.software.Software;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.Block;
 import net.minecraft.src.EntityItem;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.IInventory;
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.NBTTagCompound;
+import net.minecraft.src.NBTTagList;
 import net.minecraft.src.TileEntity;
 
 public class TileEntityMagicChest extends TileEntity implements IInventory {
 
     public static final int INVENTORY_SIZE = 27;
     
-    
-    
+    @SideOnly(Side.CLIENT)
     public float lidAngle = 0.0f;
+    
+    @SideOnly(Side.CLIENT)
     public float previousLidAngle = lidAngle;
     
     public ItemStack[] inventory = new ItemStack[INVENTORY_SIZE];
@@ -99,52 +105,14 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         
         if (distance <= pullDistanceSquared) {
             double ax = dx / distance * 0.05;
-            double ay = dy / distance * 0.05;
+            double ay = dy / distance * 0.05; 
             double az = dz / distance * 0.05;
             
+            /* Reduce gravity by 80%. */
+            if (dy > 0.0) ay += 0.032;
+            
             item.setVelocity (item.motionX + ax, item.motionY + ay, item.motionZ + az);
-            
-            /* if (distance < 0.5) distance = 0.5;
-            
-            double speed = 0.5 / distance;
-            
-            //if (speed > 1) speed = 1;
-            //else if (speed < -1) speed = -1;
-            
-            double rotationMotion = Math.atan2 (item.motionZ, item.motionX);
-            double rotation = Math.atan2 (dz, dx);
-            
-            double vx = Math.cos (rotation) * speed;
-            double vz = Math.sin (rotation) * speed; */
-            
-            /* Rotation difference, if entity does not GO into the direction of the chest, don't increase Y. */
-           /* double vy = 0.0;
-            if (Math.abs (rotation - rotationMotion) <= 90) {
-                if (distanceXSquared <= 1.5 && distanceZSquared <= 1.5 && distanceYSquared <= 1.5) {
-                    if (dy < 0) {
-                        vy = -0.05 * ((distanceXSquared + distanceZSquared) * 0.5 + 1f);
-                    }else {
-                        vy = 0.05 * ((distanceXSquared + distanceZSquared) * 0.5 + 1f);
-                    }
-                }else {
-                    double sY = pullDistance - absDy;
-                    if (sY < 0) sY = 0;
-                    if (dy < 0) {
-                        vy = -0.01 * sY;
-                    }else {
-                        vy = 0.01 * sY;
-                    }
-                }
-                
-                if (vy > 1) vy = 1;
-                else if (vy < -1) vy = -1;
-            }
-            
-            item.setVelocity (vx, vy, vz); */
         }
-        
-        
-        
     }
     
     public void onCollisionWithItem (EntityItem item) {
@@ -168,7 +136,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
                     if (storeItem) setInventorySlotContents (i, stack);
                     return null;
                 }else if (slotStack.isItemEqual (stack)) { /* Put in not empty slots. */
-                    int maxAmount = slotStack.getMaxStackSize () - stackSize;
+                    int maxAmount = slotStack.getMaxStackSize () - slotStack.stackSize;
                     if (maxAmount >= stackSize) { /* Can put on top of stack. */
                         if (storeItem) slotStack.stackSize += stackSize;
                         return null;
@@ -250,8 +218,8 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     }
 
     @Override
-    public boolean isUseableByPlayer (EntityPlayer var1) {
-        return false;
+    public boolean isUseableByPlayer (EntityPlayer player) {
+        return player.getDistanceSq ((double) this.xCoord + 0.5, (double) yCoord + 0.5, (double) zCoord + 0.5) <= 64.0;
     }
 
     @Override
@@ -271,5 +239,38 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             numUsed = value;
         }
     }
+    
+    
+    
+    /* Save and load. */
+    public void readFromNBT (NBTTagCompound nbt) {
+        super.readFromNBT (nbt);
+        NBTTagList list = nbt.getTagList ("Items");
+
+        int tagCount = list.tagCount ();
+        for (int i = 0; i < tagCount; ++i) {
+            NBTTagCompound slotTag = (NBTTagCompound) list.tagAt (i);
+            int id = slotTag.getByte ("Slot") & 255;
+
+            if (id >= 0 && id < INVENTORY_SIZE) inventory[id] = ItemStack.loadItemStackFromNBT (slotTag);
+        }
+    }
+
+    public void writeToNBT (NBTTagCompound nbt) {
+        super.writeToNBT (nbt);
+        NBTTagList list = new NBTTagList();
+
+        for (int i = 0; i < INVENTORY_SIZE; ++i) {
+            if (inventory[i] != null) {
+                NBTTagCompound slotTag = new NBTTagCompound ();
+                slotTag.setByte ("Slot", (byte) i);
+                inventory[i].writeToNBT (slotTag);
+                list.appendTag (slotTag);
+            }
+        }
+
+        nbt.setTag ("Items", list);
+    }
+    
 
 }
