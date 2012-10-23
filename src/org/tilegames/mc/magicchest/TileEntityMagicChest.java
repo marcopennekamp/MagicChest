@@ -32,6 +32,8 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     public double pullDistance = 4.0;
     
+    public boolean isChestFull = false; /* When the chest is COMPLETELY full (all slots filled with maximum size stacks. */
+    
     
     public Software software;
     
@@ -126,6 +128,8 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     
     public ItemStack processItemStack (ItemStack stack, boolean storeItem) {
+        if (isChestFull) return stack; /* This stack can not be taken anymore. */
+        
         int stackSize = stack.stackSize;
         
         /* Search for stacks the item can be put in. */
@@ -160,6 +164,20 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         return true;
     }
     
+    
+    
+    /* Functions that update the state of the chest. */
+    
+    public void updateIsChestFull () {
+        isChestFull = true;
+        for (int i = INVENTORY_SIZE - 1; i > 0; --i) { /* Begin at back, because the last slots are more often empty than first slots. */
+            ItemStack stack = getStackInSlot (i);
+            if (stack == null || stack.stackSize < stack.getMaxStackSize ()) {
+                isChestFull = false;
+                break;
+            }
+        }
+    }
     
     
     
