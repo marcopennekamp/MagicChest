@@ -2,6 +2,7 @@ package org.tilegames.mc.magicchest;
 
 import java.util.List;
 
+import org.tilegames.mc.magicchest.filter.FilteringProfile;
 import org.tilegames.mc.magicchest.software.Software;
 
 import cpw.mods.fml.common.Side;
@@ -34,7 +35,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     
     /* Filtering. */
-    public ItemStack[] filteringMatrix = new ItemStack[INVENTORY_SIZE];
+    public FilteringProfile filteringCache = null;
     
     
     public int numUsed = 0;

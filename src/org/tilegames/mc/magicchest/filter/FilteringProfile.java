@@ -4,7 +4,7 @@ import net.minecraft.src.ItemStack;
 
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 
-public class FilteringCache {
+public class FilteringProfile {
     public static final int ROWS = TileEntityMagicChest.INVENTORY_ROWS;
     public static final int COLUMNS = TileEntityMagicChest.INVENTORY_COLUMNS;
     public static final int SIZE = TileEntityMagicChest.INVENTORY_SIZE;
