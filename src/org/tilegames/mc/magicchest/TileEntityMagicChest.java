@@ -2,12 +2,6 @@ package org.tilegames.mc.magicchest;
 
 import java.util.List;
 
-import org.tilegames.mc.magicchest.filter.FilteringProfile;
-import org.tilegames.mc.magicchest.software.Software;
-
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
-
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.Block;
 import net.minecraft.src.EntityItem;
@@ -17,6 +11,12 @@ import net.minecraft.src.ItemStack;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.NBTTagList;
 import net.minecraft.src.TileEntity;
+
+import org.tilegames.mc.magicchest.filter.FilteringProfile;
+import org.tilegames.mc.magicchest.software.Software;
+
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
 
 public class TileEntityMagicChest extends TileEntity implements IInventory {
 

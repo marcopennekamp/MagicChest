@@ -76,7 +76,10 @@ public class MagicChestRenderer extends TileEntitySpecialRenderer implements ISi
     }
 
     public void renderInventoryBlock (Block block, int metadata, int modelID, RenderBlocks renderer) {
+        GL11.glRotatef (90.0F, 0.0F, 1.0F, 0.0F);
+        GL11.glTranslatef (-0.5F, -0.5F, -0.5F);
         renderTileEntityAt (null, 0, 0, 0, 0.0f);
+        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
     }
 
     public boolean renderWorldBlock (IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {

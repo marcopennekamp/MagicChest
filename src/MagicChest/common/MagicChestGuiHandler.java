@@ -1,12 +1,13 @@
 package MagicChest.common;
 
+import net.minecraft.src.EntityPlayer;
+import net.minecraft.src.TileEntity;
+import net.minecraft.src.World;
+
 import org.tilegames.mc.magicchest.ContainerMagicChest;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 import org.tilegames.mc.magicchest.client.GuiMagicChest;
 
-import net.minecraft.src.EntityPlayer;
-import net.minecraft.src.TileEntity;
-import net.minecraft.src.World;
 import cpw.mods.fml.common.network.IGuiHandler;
 
 public class MagicChestGuiHandler implements IGuiHandler {

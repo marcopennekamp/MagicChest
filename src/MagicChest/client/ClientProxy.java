@@ -1,14 +1,15 @@
 package MagicChest.client;
 
+import net.minecraftforge.client.MinecraftForgeClient;
+
 import org.tilegames.mc.magicchest.BlockMagicChest;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 import org.tilegames.mc.magicchest.client.MagicChestRenderer;
 
-import cpw.mods.fml.client.registry.ClientRegistry;
-import cpw.mods.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.client.MinecraftForgeClient;
 import MagicChest.common.CommonProxy;
 import MagicChest.common.MagicChest;
+import cpw.mods.fml.client.registry.ClientRegistry;
+import cpw.mods.fml.client.registry.RenderingRegistry;
 
 
 public class ClientProxy extends CommonProxy {
