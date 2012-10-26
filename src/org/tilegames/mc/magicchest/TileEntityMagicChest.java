@@ -19,7 +19,10 @@ import net.minecraft.src.TileEntity;
 
 public class TileEntityMagicChest extends TileEntity implements IInventory {
 
-    public static final int INVENTORY_SIZE = 27;
+    /* TODO(Marco): Replace hardcoded values with these constants. */
+    public static final int INVENTORY_ROWS = 3;
+    public static final int INVENTORY_COLUMNS = 9;
+    public static final int INVENTORY_SIZE = INVENTORY_ROWS * INVENTORY_COLUMNS;
     
     @SideOnly(Side.CLIENT)
     public float lidAngle = 0.0f;
@@ -28,6 +31,12 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     public float previousLidAngle = lidAngle;
     
     public ItemStack[] inventory = new ItemStack[INVENTORY_SIZE];
+    
+    
+    /* Filtering. */
+    public ItemStack[] filteringMatrix = new ItemStack[INVENTORY_SIZE];
+    
+    
     public int numUsed = 0;
     
     public double pullDistance = 4.0;
