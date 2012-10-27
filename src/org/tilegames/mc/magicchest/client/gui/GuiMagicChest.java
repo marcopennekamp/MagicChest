@@ -155,8 +155,9 @@ public class GuiMagicChest extends GuiScreen {
         }
         
         public void drawIconButton (int texture, int x, int y, int state) {
-            double u = Math.floor (texture / 16.0) * 16.0;
-            double v = texture % 16 * 16.0;
+            double u = (double) (texture % 16) / 16.0;
+            double v = Math.floor ((double) texture / 16.0) / 16.0;
+            
             double z = zLevel;
             double uEnd = u + 16.0 / 256.0;
             double vEnd = v + 16.0 / 256.0;
@@ -204,6 +205,9 @@ public class GuiMagicChest extends GuiScreen {
     /* The page that is currently rendered. */
     private Page page;
     
+    /* All the pages. */
+    private List<Page> pages = new ArrayList<Page> ();
+    
     
     /**
      * Starting X and Y position for the GUI.
@@ -220,6 +224,13 @@ public class GuiMagicChest extends GuiScreen {
     }
     
     
+    private void setupPage (Page page, int x, int y) {
+        IconButton button = new IconButton (page, x, y);
+        page.setButton (button);
+        pages.add (page);
+        iconButtons.add (button);
+    }
+    
     public void initGui () {
         super.initGui ();
         mc.thePlayer.craftingInventory = container;
@@ -228,10 +239,21 @@ public class GuiMagicChest extends GuiScreen {
         offsetY = (height - SIZE_Y) / 2;
         
         renderHelper = new RenderHelper ();
-        page = new PageInventory (this);
         
+        pages.clear ();
         iconButtons.clear ();
-        iconButtons.add (new IconButton (PageOptions.BUTTON_ID, 133, 6, 0));
+        
+        // setupPage (new PageInventory (this), 102, 6);
+        pages.add (new PageInventory (this));
+        
+        setupPage (new PageOptions (this), 115, 6);
+        setupPage (new PageSorting (this), 123, 6);
+        setupPage (new PageFiltering (this), 131, 6);
+        for (int i = 0; i < 3; ++i) {
+            setupPage (new PageSoftware (this, i), 145 + i * 8, 6);
+        }
+        
+        page = pages.get (0);
     }
     
     
@@ -303,27 +325,24 @@ public class GuiMagicChest extends GuiScreen {
     @Override
     protected void keyTyped (char character, int key) {
         if (key == 1 || key == mc.gameSettings.keyBindInventory.keyCode) { /* Escape closes page or UI depending on page. */
-            if (page instanceof PageInventory) {
+            /* if (page instanceof PageInventory) {
                 mc.thePlayer.closeScreen ();
             }else {
-                page = new PageInventory (this);
-            }
+                page = pages.get (0);
+            } */
+            mc.thePlayer.closeScreen ();
         }else {
             page.onKeyType (character, key);
         }
     }
     
     private void onIconButtonClick (IconButton button) {
-        if (button.id == page.getButtonId ()) {
+        if (button.getId () == page.getButtonId ()) {
             page = new PageInventory (this);
             return;
         }
         
-        switch (button.id) {
-            case PageOptions.BUTTON_ID:
-                page = new PageOptions (this);
-                break;
-        }
+        page = pages.get (button.getId () - Page.BASE_ID);
     }
     
 

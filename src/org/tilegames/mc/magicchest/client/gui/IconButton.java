@@ -9,20 +9,18 @@ public class IconButton {
     public static final int WIDTH = 8;
     public static final int HEIGHT = 8;
     
-    public int id;
+    private Page page;
     public int x;
     public int y;
-    public int texture;
     
-    public IconButton (int id, int x, int y, int texture) {
-        this.id = id;
+    public IconButton (Page page, int x, int y) {
+        this.page = page;
         this.x = x;
         this.y = y;
-        this.texture = texture;
     }
     
-    public int getState (Page page, int mx, int my) {
-        if (id == page.getButtonId ()) {
+    public int getState (Page activePage, int mx, int my) {
+        if (page.getButtonId () == activePage.getButtonId ()) {
             return STATE_ACTIVE;
         }else if (inBounds (mx, my)) {
             return STATE_HOVER;
@@ -31,7 +29,11 @@ public class IconButton {
     }
     
     public int getTexture () {
-        return texture;
+        return page.getButtonTexture ();
+    }
+    
+    public int getId () {
+        return page.getButtonId ();
     }
     
     public boolean inBounds (int px, int py) {

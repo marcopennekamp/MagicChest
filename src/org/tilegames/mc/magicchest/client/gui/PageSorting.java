@@ -1,19 +1,19 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-public class PageOptions extends Page {
+public class PageSorting extends Page {
 
-    public static final int BUTTON_ID = 101;
+    public static final int BUTTON_ID = 102;
     
-    public PageOptions (GuiMagicChest gui) {
+    public PageSorting (GuiMagicChest gui) {
         super (gui);
     }
     
 
     @Override
     public String getTitle () {
-        return "Options";
+        return "Sorting";
     }
-    
+
     @Override
     public int getButtonId () {
         return BUTTON_ID;
@@ -21,10 +21,10 @@ public class PageOptions extends Page {
     
     @Override
     public int getButtonTexture () {
-        return 1;
+        return 0;
     }
-    
 
+    
     @Override
     public void draw (int mouseX, int mouseY) {
         gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/Pages/Options.png");

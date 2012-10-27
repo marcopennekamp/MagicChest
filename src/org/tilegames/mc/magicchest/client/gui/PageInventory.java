@@ -27,6 +27,11 @@ public class PageInventory extends Page {
         return BUTTON_ID;
     }
     
+    @Override
+    public int getButtonTexture () {
+        return 0;
+    }
+    
 
     @Override
     public void draw (int mouseX, int mouseY) {
@@ -73,7 +78,7 @@ public class PageInventory extends Page {
     }
 
     @Override
-    public void onClick (int x, int y, int button) {
+    public boolean onClick (int x, int y, int button) {
         boolean blockPickPressed = button == gui.getMinecraft ().gameSettings.keyBindPickBlock.keyCode + 100;
 
         if (button == 0 || button == 1 || blockPickPressed) {
@@ -91,12 +96,15 @@ public class PageInventory extends Page {
                     boolean transferStack = slotId != -999 && (Keyboard.isKeyDown (42) || Keyboard.isKeyDown (54)); /* Keys: Shift. */
                     handleMouseClick (slot, slotId, button, transferStack ? 1 : 0);
                 }
+                return true;
             }
         }
+        
+        return false;
     }
     
     @Override
-    public void onKeyType (char character, int key) {
+    public boolean onKeyType (char character, int key) {
         if (gui.getInventoryPlayer ().getItemStack () == null && hoveredSlot != null) {
             for (int i = 0; i < 9; ++i) {
                 if (key == 2 + i) {
@@ -109,6 +117,7 @@ public class PageInventory extends Page {
             handleMouseClick (hoveredSlot, hoveredSlot.slotNumber, key, 3);
         }
         
+        return false;
     }
     
     

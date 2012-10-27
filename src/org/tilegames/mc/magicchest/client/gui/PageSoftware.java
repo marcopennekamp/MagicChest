@@ -1,30 +1,37 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-public class PageOptions extends Page {
+public class PageSoftware extends Page {
 
-    public static final int BUTTON_ID = 101;
+    public static final int BASE_ID = 104;
     
-    public PageOptions (GuiMagicChest gui) {
+    private int id;
+    
+    public PageSoftware(GuiMagicChest gui, int id) {
         super (gui);
+        this.id = id;
     }
     
 
     @Override
     public String getTitle () {
-        return "Options";
+        return "Software";
     }
-    
+
     @Override
     public int getButtonId () {
-        return BUTTON_ID;
+        return BASE_ID + id;
     }
     
     @Override
     public int getButtonTexture () {
-        return 1;
+        return 0;
     }
     
+    public int getId () {
+        return id;
+    }
 
+    
     @Override
     public void draw (int mouseX, int mouseY) {
         gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/Pages/Options.png");
@@ -39,5 +46,5 @@ public class PageOptions extends Page {
     public boolean onKeyType (char character, int key) {
         return false;
     }
-
+    
 }
