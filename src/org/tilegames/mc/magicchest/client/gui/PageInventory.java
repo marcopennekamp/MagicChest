@@ -8,11 +8,23 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 public class PageInventory extends Page {
+    
+    public static final int BUTTON_ID = 100;
 
     private Slot hoveredSlot;
     
     public PageInventory (GuiMagicChest gui) {
         super (gui);
+    }
+    
+    @Override
+    public String getTitle () {
+        return "Magic Chest";
+    }
+
+    @Override
+    public int getButtonId () {
+        return BUTTON_ID;
     }
     
 
@@ -44,7 +56,7 @@ public class PageInventory extends Page {
             /* Check hover status. */
             if (gui.renderHelper.pointInRectangle (x, y, 16, 16, mouseX, mouseY)) {
                 hoveredSlot = slot;
-                gui.renderHelper.drawHoverRectangle (x, y, 16, 16);
+                gui.renderHelper.drawHoverRectangle (x, y, 16, 16, 0x80FFFFFF);
             }
         }
         
@@ -113,8 +125,5 @@ public class PageInventory extends Page {
         if (slot != null) id = slot.slotNumber;
         gui.getMinecraft ().playerController.windowClick (gui.container.windowId, id, button, transferStack, gui.getMinecraft ().thePlayer);
     }
-
-
-    
 
 }

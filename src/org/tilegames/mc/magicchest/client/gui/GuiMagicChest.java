@@ -1,5 +1,6 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,10 +51,10 @@ public class GuiMagicChest extends GuiScreen {
             getRenderEngine ().bindTexture (getRenderEngine ().getTexture (path));
         }
         
-        public void drawHoverRectangle (int x, int y, int width, int height) {
+        public void drawHoverRectangle (int x, int y, int width, int height, int color) {
             GL11.glDisable (GL11.GL_LIGHTING);
             GL11.glDisable (GL11.GL_DEPTH_TEST);
-            drawGradientRect (x, y, x + width, y + height, 0x80FFFFFF, 0x80FFFFFF);
+            drawGradientRect (x, y, x + width, y + height, color, color);
             GL11.glEnable (GL11.GL_LIGHTING);
             GL11.glEnable (GL11.GL_DEPTH_TEST);
         }
@@ -153,14 +154,14 @@ public class GuiMagicChest extends GuiScreen {
             }
         }
         
-        public void drawIconButton (int id, double x, double y) {
-            double u = Math.floor (id / 16.0) * 16.0;
-            double v = id % 16 * 16.0;
+        public void drawIconButton (int texture, int x, int y, int state) {
+            double u = Math.floor (texture / 16.0) * 16.0;
+            double v = texture % 16 * 16.0;
             double z = zLevel;
             double uEnd = u + 16.0 / 256.0;
             double vEnd = v + 16.0 / 256.0;
-            double xEnd = x + 8.0;
-            double yEnd = y + 8.0;
+            double xEnd = x + IconButton.WIDTH;
+            double yEnd = y + IconButton.HEIGHT;
             
             Tessellator.instance.startDrawingQuads ();
             Tessellator.instance.addVertexWithUV (x, yEnd, z, u, vEnd);
@@ -168,6 +169,17 @@ public class GuiMagicChest extends GuiScreen {
             Tessellator.instance.addVertexWithUV (xEnd, y, z, uEnd, v);
             Tessellator.instance.addVertexWithUV (x, y, z, u, v);
             Tessellator.instance.draw ();
+            
+            if (state != IconButton.STATE_NORMAL) {
+                int color;
+                if (state == IconButton.STATE_HOVER) { /* HOVER */
+                    color = 0x20FFFFFF;
+                }else { /* ACTIVE */
+                    color = 0x40FFFFFF;
+                }
+                
+                drawHoverRectangle (x, y, IconButton.WIDTH, IconButton.HEIGHT, color);
+            }
         }
         
         
@@ -182,6 +194,10 @@ public class GuiMagicChest extends GuiScreen {
     
     public ContainerMagicChest container;
     //private TileEntityMagicChest chest;
+    
+    
+    
+    public List<IconButton> iconButtons = new ArrayList<IconButton> ();
     
     
     
@@ -213,11 +229,14 @@ public class GuiMagicChest extends GuiScreen {
         
         renderHelper = new RenderHelper ();
         page = new PageInventory (this);
+        
+        iconButtons.clear ();
+        iconButtons.add (new IconButton (PageOptions.BUTTON_ID, 135, 4, 0));
     }
     
     
     public void drawScreen (int mouseX, int mouseY, float par3) {
-        // super.drawScreen (par1, par2, par3); /* Do NOT draw buttons the standard way! */
+        // super.drawScreen (mouseX, mouseY, par3); /* Do NOT draw buttons the standard way! */
         
         /* Draw default background. */
         drawDefaultBackground ();
@@ -234,12 +253,25 @@ public class GuiMagicChest extends GuiScreen {
         GL11.glTranslatef (offsetX, offsetY, 0.0F);
         GL11.glColor4f (1.0F, 1.0F, 1.0F, 1.0F);
         
-        /* Draw buttons. */
+        
+        /* Draw foreground. */
+        GL11.glPushMatrix ();
+        GL11.glTranslatef (0.0f, 0.0f, 100.0f);
+        
+        /* Draw icon buttons. */
         renderHelper.bindTexture ("/MagicChest/Buttons.png");
         
-        setZLevel (100.0f);
-        renderHelper.drawIconButton (0, 135.0, 4.0);
-        setZLevel (0.0f);
+        int size = iconButtons.size ();
+        for (int i = 0; i < size; ++i) {
+            IconButton button = iconButtons.get (i);
+            renderHelper.drawIconButton (button.getTexture (), button.x, button.y, button.getState (page, mouseX - offsetX, mouseY - offsetY));
+        }
+        
+        /* Draw titles. */
+        fontRenderer.drawString (page.getTitle (), 8, 6, 0x404040);
+        
+        GL11.glPopMatrix ();
+        
         
         /* Render page. */
         page.draw (mouseX, mouseY);
@@ -252,9 +284,20 @@ public class GuiMagicChest extends GuiScreen {
     }
 
     @Override
-    protected void mouseClicked (int x, int y, int button) {
-        super.mouseClicked (x, y, button);
-        page.onClick (x, y, button);
+    protected void mouseClicked (int x, int y, int mouseButton) {
+        super.mouseClicked (x, y, mouseButton);
+        
+        /* Check icon buttons. */
+        int size = iconButtons.size ();
+        for (int i = 0; i < size; ++i) {
+            IconButton button = iconButtons.get (i);
+            if (button.inBounds (x - offsetX, y - offsetY)) {
+                onIconButtonClick (button);
+                return;
+            }
+        }
+        
+        page.onClick (x, y, mouseButton);
     }
     
     @Override
@@ -267,6 +310,19 @@ public class GuiMagicChest extends GuiScreen {
             }
         }else {
             page.onKeyType (character, key);
+        }
+    }
+    
+    private void onIconButtonClick (IconButton button) {
+        if (button.id == page.getButtonId ()) {
+            page = new PageInventory (this);
+            return;
+        }
+        
+        switch (button.id) {
+            case PageOptions.BUTTON_ID:
+                page = new PageOptions (this);
+                break;
         }
     }
     
