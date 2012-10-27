@@ -6,7 +6,7 @@ import net.minecraft.src.World;
 
 import org.tilegames.mc.magicchest.ContainerMagicChest;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
-import org.tilegames.mc.magicchest.client.GuiMagicChest;
+import org.tilegames.mc.magicchest.client.gui.GuiMagicChest;
 
 import cpw.mods.fml.common.network.IGuiHandler;
 

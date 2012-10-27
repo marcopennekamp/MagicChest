@@ -6,4 +6,14 @@ public abstract class Software {
     
     
     
+    
+    
+    
+    
+    public void renderGui () { };
+    
+    
+    
+    
+    
 }
