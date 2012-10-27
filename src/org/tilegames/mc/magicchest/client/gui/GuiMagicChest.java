@@ -43,12 +43,12 @@ public class GuiMagicChest extends GuiScreen {
             bindTexture (path);
             
             /* Draw. */
-            GL11.glColor4f (1.0F, 1.0F, 1.0F, 1.0F);
+            GL11.glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
             drawTexturedModalRect (0, 0, 0, 0, SIZE_X, SIZE_Y);
         }
         
         public void bindTexture (String path) {
-            getRenderEngine ().bindTexture (getRenderEngine ().getTexture (path));
+            getRenderEngine ().bindTexture (getRenderEngine ().getTexture ("/MagicChest/" + path));
         }
         
         public void drawHoverRectangle (int x, int y, int width, int height, int color) {
@@ -183,6 +183,19 @@ public class GuiMagicChest extends GuiScreen {
             }
         }
         
+        public void drawDevelopingBanner (int yOffset) {
+            GL11.glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
+            bindTexture ("Developing.png");
+            final int width = 110;
+            final int height = 57;
+            
+            int x = (SIZE_X - width) / 2;
+            int y = (SIZE_Y - height) / 2 - 13 + yOffset; /* Subtract string height and padding. */
+            drawTexturedModalRect (x, y, 0, 0, width, height);
+            
+            String string = "Developing!";
+            fontRenderer.drawString (string, (SIZE_X - fontRenderer.getStringWidth (string)) / 2, y + height + 5, 0x404040);
+        }
         
         public boolean pointInRectangle (int x, int y, int width, int height, int px, int py) {
             px -= offsetX;
@@ -194,7 +207,7 @@ public class GuiMagicChest extends GuiScreen {
     
     
     public ContainerMagicChest container;
-    //private TileEntityMagicChest chest;
+    public TileEntityMagicChest chest;
     
     
     
@@ -220,9 +233,22 @@ public class GuiMagicChest extends GuiScreen {
     
     public GuiMagicChest (IInventory playerInventory, TileEntityMagicChest chestInventory) {
         container = new ContainerMagicChest (playerInventory, chestInventory);
-        //chest = chestInventory;
+        chest = chestInventory;
+        
+        renderHelper = new RenderHelper ();
+        
+        // setupPage (new PageInventory (this), 102, 6);
+        pages.add (new PageInventory (this));
+        
+        setupPage (new PageOptions (this), 115, 6);
+        setupPage (new PageSorting (this), 123, 6);
+        setupPage (new PageFiltering (this), 131, 6);
+        for (int i = 0; i < 3; ++i) {
+            setupPage (new PageSoftware (this, i), 145 + i * 8, 6);
+        }
+        
+        page = pages.get (0);
     }
-    
     
     private void setupPage (Page page, int x, int y) {
         IconButton button = new IconButton (page, x, y);
@@ -237,23 +263,6 @@ public class GuiMagicChest extends GuiScreen {
         
         offsetX = (width - SIZE_X) / 2;
         offsetY = (height - SIZE_Y) / 2;
-        
-        renderHelper = new RenderHelper ();
-        
-        pages.clear ();
-        iconButtons.clear ();
-        
-        // setupPage (new PageInventory (this), 102, 6);
-        pages.add (new PageInventory (this));
-        
-        setupPage (new PageOptions (this), 115, 6);
-        setupPage (new PageSorting (this), 123, 6);
-        setupPage (new PageFiltering (this), 131, 6);
-        for (int i = 0; i < 3; ++i) {
-            setupPage (new PageSoftware (this, i), 145 + i * 8, 6);
-        }
-        
-        page = pages.get (0);
     }
     
     
@@ -281,7 +290,7 @@ public class GuiMagicChest extends GuiScreen {
         GL11.glTranslatef (0.0f, 0.0f, 100.0f);
         
         /* Draw icon buttons. */
-        renderHelper.bindTexture ("/MagicChest/Buttons.png");
+        renderHelper.bindTexture ("Buttons.png");
         
         int size = iconButtons.size ();
         for (int i = 0; i < size; ++i) {
@@ -314,7 +323,7 @@ public class GuiMagicChest extends GuiScreen {
         for (int i = 0; i < size; ++i) {
             IconButton button = iconButtons.get (i);
             if (button.inBounds (x - offsetX, y - offsetY)) {
-                onIconButtonClick (button);
+                onIconButtonClick (button, mouseButton);
                 return;
             }
         }
@@ -336,13 +345,17 @@ public class GuiMagicChest extends GuiScreen {
         }
     }
     
-    private void onIconButtonClick (IconButton button) {
-        if (button.getId () == page.getButtonId ()) {
-            page = new PageInventory (this);
-            return;
+    private void onIconButtonClick (IconButton button, int mouseButton) {
+        this.mc.sndManager.playSoundFX ("random.click", 1.0F, 1.0F);
+        if (mouseButton == 0) {
+            if (button.getId () == page.getButtonId ()) {
+                page = new PageInventory (this);
+                return;
+            }
+            page = pages.get (button.getId () - Page.BASE_ID);
+        }else if (mouseButton == 1) {
+            page.onIconButtonRightClick ();
         }
-        
-        page = pages.get (button.getId () - Page.BASE_ID);
     }
     
 

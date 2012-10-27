@@ -16,6 +16,7 @@ public class MagicChestGuiHandler implements IGuiHandler {
     public Object getServerGuiElement (int id, EntityPlayer player, World world, int x, int y, int z) {
         TileEntity tileEntity = world.getBlockTileEntity (x, y, z);
         if (tileEntity instanceof TileEntityMagicChest){
+            ((TileEntityMagicChest) tileEntity).openChest ();
             return new ContainerMagicChest (player.inventory, (TileEntityMagicChest) tileEntity);
         }
         return null;

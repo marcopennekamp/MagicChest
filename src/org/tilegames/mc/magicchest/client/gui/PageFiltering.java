@@ -27,7 +27,9 @@ public class PageFiltering extends Page {
     
     @Override
     public void draw (int mouseX, int mouseY) {
-        gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/Pages/Options.png");
+        gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Options.png");
+        
+        gui.renderHelper.drawDevelopingBanner (0);
     }
 
     @Override

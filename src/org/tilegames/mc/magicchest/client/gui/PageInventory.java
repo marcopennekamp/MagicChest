@@ -3,6 +3,7 @@ package org.tilegames.mc.magicchest.client.gui;
 import net.minecraft.src.InventoryPlayer;
 import net.minecraft.src.OpenGlHelper;
 import net.minecraft.src.Slot;
+import net.minecraft.src.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -38,7 +39,10 @@ public class PageInventory extends Page {
         InventoryPlayer playerInventory = gui.getInventoryPlayer ();
         
         /* Draw background. */
-        gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/Pages/Inventory.png");
+        gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Inventory.png");
+        
+        /* Draw "Inventory" text. */
+        gui.getFontRenderer ().drawString (StatCollector.translateToLocal (gui.getInventoryPlayer ().getInvName ()), 8, 74, 0x404040);
         
         /* Draw slots. */
         hoveredSlot = null;

@@ -18,6 +18,8 @@ public abstract class Page {
     public abstract int getButtonId ();
     public abstract int getButtonTexture ();
     
+    public void onIconButtonRightClick () { }
+    
     public abstract void draw (int mouseX, int mouseY);
     public abstract boolean onClick (int x, int y, int button);
     public abstract boolean onKeyType (char character, int key);

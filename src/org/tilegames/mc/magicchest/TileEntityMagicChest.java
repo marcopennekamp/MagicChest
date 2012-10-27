@@ -3,7 +3,6 @@ package org.tilegames.mc.magicchest;
 import java.util.List;
 
 import net.minecraft.src.AxisAlignedBB;
-import net.minecraft.src.Block;
 import net.minecraft.src.EntityItem;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.IInventory;
@@ -15,6 +14,7 @@ import net.minecraft.src.TileEntity;
 import org.tilegames.mc.magicchest.filter.FilteringProfile;
 import org.tilegames.mc.magicchest.software.Software;
 
+import MagicChest.common.MagicChest;
 import cpw.mods.fml.common.Side;
 import cpw.mods.fml.common.asm.SideOnly;
 
@@ -136,15 +136,20 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     }
     
     
-    
     public ItemStack processItemStack (ItemStack stack, boolean storeItem) {
         if (isChestFull) return stack; /* This stack can not be taken anymore. */
         
+        return processItemStack (inventory, stack, storeItem, false);
+    }
+    
+    public ItemStack processItemStack (ItemStack[] array, ItemStack stack, boolean storeItem, boolean ignoreFilteredSlots) {
         int stackSize = stack.stackSize;
         
         /* Search for stacks the item can be put in. */
         for (int i = 0; i < INVENTORY_SIZE; ++i) {
-            ItemStack slotStack = getStackInSlot (i);
+            if (ignoreFilteredSlots && slotHasFilter (i)) continue;
+            
+            ItemStack slotStack = array[i];
             if (canStoreItemInSlot (stack, i)) {
                 if (slotStack == null) { /* Put in empty slot. */
                     if (storeItem) setInventorySlotContents (i, stack);
@@ -174,6 +179,10 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         return true;
     }
     
+    public boolean slotHasFilter (int slot) {
+        return false;
+    }
+    
     
     
     /* Functions that update the state of the chest. */
@@ -188,6 +197,42 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             }
         }
     }
+    
+    
+    /* Sorting. */
+    
+    /* Preserves filtered slots. */
+    public void sortInventory () {
+        if (worldObj.isRemote) { /* Notify server. */
+            worldObj.addBlockEvent (xCoord, yCoord, zCoord, MagicChest.instance.blockMagicChest.blockID, 2, 0);
+            return;
+        }
+        
+        System.out.println ("Sort!");
+        
+        inventory = sortItemStackArray (inventory);
+        onInventoryChanged ();
+    }
+    
+    public ItemStack[] sortItemStackArray (ItemStack[] stacks) {
+        ItemStack[] newArray = new ItemStack[stacks.length];
+        
+        /* Merge item stacks. */
+        for (int i = 0; i < stacks.length; ++i) {
+            if (slotHasFilter (i)) {
+                newArray[i] = stacks[i];
+                continue;
+            }
+            
+            ItemStack stack = stacks[i];
+            if (stack != null) {
+                processItemStack (newArray, stack, true, true);
+            }
+        }
+        
+        return newArray;
+    }
+    
     
     
     
@@ -253,24 +298,27 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     @Override
     public void openChest () {
         ++numUsed;
-        worldObj.addBlockEvent (this.xCoord, this.yCoord, this.zCoord, Block.chest.blockID, 1, numUsed);
+        worldObj.addBlockEvent (xCoord, yCoord, zCoord, MagicChest.instance.blockMagicChest.blockID, 1, numUsed);
     }
 
     @Override
     public void closeChest () {
         --numUsed;
-        worldObj.addBlockEvent (this.xCoord, this.yCoord, this.zCoord, Block.chest.blockID, 1, numUsed);
+        worldObj.addBlockEvent (xCoord, yCoord, zCoord, MagicChest.instance.blockMagicChest.blockID, 1, numUsed);
     }
     
     public void receiveClientEvent (int id, int value) {
         if (id == 1) {
             numUsed = value;
+        }else if (id == 2 && !worldObj.isRemote) { /* Sort. */
+            sortInventory ();
         }
     }
     
     
     
     /* Save and load. */
+    
     public void readFromNBT (NBTTagCompound nbt) {
         super.readFromNBT (nbt);
         NBTTagList list = nbt.getTagList ("Items");
@@ -299,6 +347,6 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
 
         nbt.setTag ("Items", list);
     }
-    
+
 
 }
