@@ -231,7 +231,7 @@ public class GuiMagicChest extends GuiScreen {
         page = new PageInventory (this);
         
         iconButtons.clear ();
-        iconButtons.add (new IconButton (PageOptions.BUTTON_ID, 135, 4, 0));
+        iconButtons.add (new IconButton (PageOptions.BUTTON_ID, 133, 6, 0));
     }
     
     

@@ -21,7 +21,7 @@ public class PageOptions extends Page {
 
     @Override
     public void draw (int mouseX, int mouseY) {
-        gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/pages/Options.png");
+        gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/Pages/Options.png");
     }
 
     @Override

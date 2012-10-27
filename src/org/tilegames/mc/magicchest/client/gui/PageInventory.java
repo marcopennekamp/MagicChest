@@ -33,7 +33,7 @@ public class PageInventory extends Page {
         InventoryPlayer playerInventory = gui.getInventoryPlayer ();
         
         /* Draw background. */
-        gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/ChestGui.png");
+        gui.renderHelper.bindAndDrawBackgroundTexture ("/MagicChest/Pages/Inventory.png");
         
         /* Draw slots. */
         hoveredSlot = null;
