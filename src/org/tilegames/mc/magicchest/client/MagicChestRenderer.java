@@ -18,6 +18,8 @@ import cpw.mods.fml.common.asm.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MagicChestRenderer extends TileEntitySpecialRenderer implements ISimpleBlockRenderingHandler {
 
+    private static final String[] textures = {"Oak", "Spruce", "Birch", "Oak"};
+    
     private int renderId;
     private ModelMagicChest model;
 
@@ -28,23 +30,34 @@ public class MagicChestRenderer extends TileEntitySpecialRenderer implements ISi
     
     
     @Override
-    public void renderTileEntityAt (TileEntity _entity, double _x, double _y, double _z, float partialTickTime) {
-        TileEntityMagicChest entity = null;
-        if (_entity != null) entity = (TileEntityMagicChest) _entity;
-        float x = (float) _x;
-        float y = (float) _y;
-        float z = (float) _z;
-
+    public void renderTileEntityAt (TileEntity entity, double x, double y, double z, float partialTickTime) {
+        renderTileEntityMagicChest ((TileEntityMagicChest) entity, x, y, z, partialTickTime);
+    }
+    
+    public void renderTileEntityMagicChest (TileEntityMagicChest entity, double x, double y, double z, float partialTickTime) {
         /* Get chest rotation in degrees. */
         int rotation = 0;
+        int textureId = 0;
         if (entity != null) {
             if (entity.worldObj != null) {
-                rotation = entity.getBlockMetadata () * 90 - 180; /* 0 -> -180°, 1 -> -90°, 2 -> 0°, 3 -> 90° */
+                int metadata = entity.getBlockMetadata ();
+                rotation = (metadata & 0x3) * 90 - 180; /* 0 -> -180°, 1 -> -90°, 2 -> 0°, 3 -> 90° */
+                textureId = (metadata & 0xC) >> 2;
             }
         }
         
+        /* Set angle. */
+        float angle = entity.previousLidAngle + ((entity.lidAngle - entity.previousLidAngle) * partialTickTime); /* Okay this is silly Minecraft... */
+        angle = 1.0F - angle;
+        angle = 1.0F - angle * angle * angle;
+        model.lid.rotateAngleX = -(angle * (float) Math.PI / 2.0F);
+    
+        render ((float) x, (float) y, (float) z, rotation, textureId);
+    }
+    
+    public void render (float x, float y, float z, int rotation, int textureId) {
         /* Bind texture. */
-        bindTextureByName ("/MagicChest/MagicChest.png");
+        bindTextureByName ("/MagicChest/Model/Chest/" + textures[textureId] + ".png");
         
         /* Setup matrices. */
         GL11.glPushMatrix ();
@@ -56,16 +69,6 @@ public class MagicChestRenderer extends TileEntitySpecialRenderer implements ISi
         GL11.glRotatef (rotation, 0.0F, 1.0F, 0.0F);
         GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
         
-        /* Set angle. */
-        if (entity != null) {
-            float angle = entity.previousLidAngle + ((entity.lidAngle - entity.previousLidAngle) * partialTickTime); /* Okay this is silly Minecraft... */
-            angle = 1.0F - angle;
-            angle = 1.0F - angle * angle * angle;
-            model.lid.rotateAngleX = -(angle * (float) Math.PI / 2.0F);
-        }else {
-            model.lid.rotateAngleX = 0.0f;
-        }
-        
         /* Render. */
         model.renderChest ();
         
@@ -74,11 +77,15 @@ public class MagicChestRenderer extends TileEntitySpecialRenderer implements ISi
         GL11.glPopMatrix ();
         GL11.glColor4f (1.0F, 1.0F, 1.0F, 1.0F);
     }
+    
 
     public void renderInventoryBlock (Block block, int metadata, int modelID, RenderBlocks renderer) {
-        GL11.glRotatef (90.0F, 0.0F, 1.0F, 0.0F);
-        GL11.glTranslatef (-0.5F, -0.5F, -0.5F);
-        renderTileEntityAt (null, 0, 0, 0, 0.0f);
+        /* "metadata" is actually item damage here. */
+        
+        GL11.glRotatef (90.0f, 0.0f, 1.0f, 0.0f);
+        GL11.glTranslatef (-0.5f, -0.5f, -0.5f);
+        model.lid.rotateAngleX = 0.0f;
+        render (0.0f, 0.0f, 0.0f, 0, metadata & 0x3);
         GL11.glEnable(GL12.GL_RESCALE_NORMAL);
     }
 

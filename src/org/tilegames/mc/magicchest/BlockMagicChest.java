@@ -1,5 +1,7 @@
 package org.tilegames.mc.magicchest;
 
+import java.util.Random;
+
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.BlockContainer;
 import net.minecraft.src.CreativeTabs;
@@ -26,7 +28,7 @@ public class BlockMagicChest extends BlockContainer {
         super (id, Material.wood);
         setCreativeTab (CreativeTabs.tabBlock);
         /* This fixes the super bad onCollision stuff. Basically the item has to be WITHIN the block, not just touch it. Hilarious, I mean it! */
-        setBlockBounds (1.0f - FREE_SPACE_SIDES, 0.01f, 1.0f - FREE_SPACE_SIDES, FREE_SPACE_SIDES, FREE_SPACE_TOP, FREE_SPACE_SIDES); 
+        setBlockBounds (1.0f - FREE_SPACE_SIDES, 0.01f, 1.0f - FREE_SPACE_SIDES, FREE_SPACE_SIDES, FREE_SPACE_TOP, FREE_SPACE_SIDES);
     }
     
     
@@ -38,11 +40,25 @@ public class BlockMagicChest extends BlockContainer {
     }
     
     
-    /* Events. */
+    /* Drops. */
+    
     @Override
-    public void onBlockPlacedBy (World world, int x, int y, int z, EntityLiving par5EntityLiving) {
-        /* Calculate placement angle and set metadata. */
-        int metadata = (int) ((par5EntityLiving.rotationYaw * 4.0f / 360.0f) + 0.5f) & 3;
+    public int quantityDropped (int meta, int fortune, Random random) {
+        return 1;
+    }
+    
+    @Override
+    public int damageDropped (int metadata) {
+        return (metadata & 0xC) >> 2;
+    }
+    
+    
+    /* Events. */
+    
+    @Override
+    public void onBlockPlacedBy (World world, int x, int y, int z, EntityLiving entity) {
+        /* Calculate placement angle. */
+        int metadata = world.getBlockMetadata (x, y, z) | (int) ((entity.rotationYaw * 4.0f / 360.0f) + 0.5f) & 0x3;
         world.setBlockMetadataWithNotify (x, y, z, metadata);
     }
     
@@ -62,6 +78,14 @@ public class BlockMagicChest extends BlockContainer {
             TileEntityMagicChest chest = (TileEntityMagicChest) world.getBlockTileEntity (x, y, z);
             chest.onCollisionWithItem ((EntityItem) entity);
         }
+    }
+    
+    public void breakBlock (World world, int x, int y, int z, int par5, int par6) {
+        TileEntityMagicChest entity = (TileEntityMagicChest) world.getBlockTileEntity (x, y, z);
+        if (entity != null) {
+            entity.dropItems ();
+        }
+        super.breakBlock (world, x, y, z, par5, par6);
     }
 
     

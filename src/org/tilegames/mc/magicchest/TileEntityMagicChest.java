@@ -1,6 +1,7 @@
 package org.tilegames.mc.magicchest;
 
 import java.util.List;
+import java.util.Random;
 
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.EntityItem;
@@ -20,6 +21,8 @@ import cpw.mods.fml.common.asm.SideOnly;
 
 public class TileEntityMagicChest extends TileEntity implements IInventory {
 
+    private static final Random random = new Random ();
+    
     /* TODO(Marco): Replace hardcoded values with these constants. */
     public static final int INVENTORY_ROWS = 3;
     public static final int INVENTORY_COLUMNS = 9;
@@ -237,6 +240,41 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     
     /* Inventory Functions. */
+    
+    public void dropItems () {
+        for (int i = 0; i < INVENTORY_SIZE; ++i) {
+            ItemStack stack = getStackInSlot (i);
+
+            if (stack != null) {
+                float x = random.nextFloat () * 0.8F + 0.1F;
+                float y = random.nextFloat () * 0.8F + 0.1F;
+                EntityItem item;
+
+                for (float z = random.nextFloat () * 0.8F + 0.1F; stack.stackSize > 0; worldObj.spawnEntityInWorld (item)) {
+                    int size = random.nextInt (21) + 10;
+
+                    if (size > stack.stackSize) {
+                        size = stack.stackSize;
+                    }
+
+                    stack.stackSize -= size;
+                    item = new EntityItem (worldObj, 
+                            (double) ((float) xCoord + x), 
+                            (double) ((float) yCoord + y), 
+                            (double) ((float) zCoord + z), 
+                            new ItemStack (stack.itemID, size, stack.getItemDamage ()));
+                    float time = 0.05F;
+                    item.motionX = (double) ((float) random.nextGaussian() * time);
+                    item.motionY = (double) ((float) random.nextGaussian() * time + 0.2F);
+                    item.motionZ = (double) ((float) random.nextGaussian() * time);
+
+                    if (stack.hasTagCompound ()) {
+                        item.item.setTagCompound ((NBTTagCompound) stack.getTagCompound ().copy ());
+                    }
+                }
+            }
+        }
+    }
     
     @Override
     public int getSizeInventory () {
