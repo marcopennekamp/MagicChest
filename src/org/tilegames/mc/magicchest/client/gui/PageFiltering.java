@@ -21,7 +21,7 @@ public class PageFiltering extends Page {
     
     @Override
     public int getButtonTexture () {
-        return 0;
+        return 3;
     }
 
     

@@ -22,7 +22,7 @@ public class PageSorting extends Page {
     
     @Override
     public int getButtonTexture () {
-        return 0;
+        return 2;
     }
     
     
