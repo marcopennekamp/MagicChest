@@ -354,7 +354,7 @@ public class GuiMagicChest extends GuiScreen {
             }
             page = pages.get (button.getId () - Page.BASE_ID);
         }else if (mouseButton == 1) {
-            page.onIconButtonRightClick ();
+            button.getPage ().onIconButtonRightClick ();
         }
     }
     

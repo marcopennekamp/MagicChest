@@ -19,6 +19,7 @@ import net.minecraft.src.ItemStack;
 import org.tilegames.mc.magicchest.BlockMagicChest;
 import org.tilegames.mc.magicchest.ItemBlockMagicChest;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
+import org.tilegames.mc.magicchest.network.PacketHandler;
 
 import MagicChest.client.ClientProxy;
 import cpw.mods.fml.common.Mod;
@@ -76,6 +77,7 @@ public class MagicChest {
         LanguageRegistry.addName (blockMagicChest, "Magic Chest");
         
         NetworkRegistry.instance ().registerGuiHandler (this, new MagicChestGuiHandler ());
+        NetworkRegistry.instance ().registerChannel (new PacketHandler (), "magicchest");
         
         proxy.registerGraphics (blockMagicChest);
     }

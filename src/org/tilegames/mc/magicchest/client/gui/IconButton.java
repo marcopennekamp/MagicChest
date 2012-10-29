@@ -35,6 +35,10 @@ public class IconButton {
     public int getId () {
         return page.getButtonId ();
     }
+
+    public Page getPage () {
+        return page;
+    }
     
     public boolean inBounds (int px, int py) {
         return px >= x && px <= x + WIDTH && py >= y && py <= y + HEIGHT;

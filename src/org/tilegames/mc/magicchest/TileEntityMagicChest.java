@@ -1,5 +1,8 @@
 package org.tilegames.mc.magicchest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -10,14 +13,17 @@ import net.minecraft.src.IInventory;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.NBTTagList;
+import net.minecraft.src.Packet250CustomPayload;
 import net.minecraft.src.TileEntity;
 
 import org.tilegames.mc.magicchest.filter.FilteringProfile;
+import org.tilegames.mc.magicchest.network.PacketHandler;
 import org.tilegames.mc.magicchest.software.Software;
 
 import MagicChest.common.MagicChest;
 import cpw.mods.fml.common.Side;
 import cpw.mods.fml.common.asm.SideOnly;
+import cpw.mods.fml.common.network.PacketDispatcher;
 
 public class TileEntityMagicChest extends TileEntity implements IInventory {
 
@@ -155,7 +161,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             ItemStack slotStack = array[i];
             if (canStoreItemInSlot (stack, i)) {
                 if (slotStack == null) { /* Put in empty slot. */
-                    if (storeItem) setInventorySlotContents (i, stack);
+                    if (storeItem) array[i] = stack;
                     return null;
                 }else if (slotStack.isItemEqual (stack)) { /* Put in not empty slots. */
                     int maxAmount = slotStack.getMaxStackSize () - slotStack.stackSize;
@@ -204,14 +210,82 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     /* Sorting. */
     
+    /**
+     * 0  - equal
+     * 1  - a > b
+     * -1 - a < b
+     */
+    private int compareItemStacks (ItemStack a, ItemStack b) {
+        /* TODO(Marco): Implement actual compare. */
+        if (a == null && b == null) return 0;
+        else if (a == null) return 1;
+        else if (b == null) return -1;
+        
+        if (a.itemID == b.itemID) return 0;
+        else if (a.itemID > b.itemID) return 1;
+        return -1;
+    }
+    
+    /**
+     * This custom quicksort algorithm basically skips filtered slots.
+     */
+    private void quicksort (ItemStack[] stacks, int low, int high) {
+        int i = low, j = high;
+        
+        int pivotId = low + (high - low) / 2;
+        for (; pivotId < high; ++pivotId) {
+            if (!slotHasFilter (pivotId)) break;
+        }
+        ItemStack pivot = stacks[pivotId];
+
+        while (i <= j) {
+            /* Element on left hand side. */
+            for (; i < pivotId; ++i) {
+                if (slotHasFilter (i)) continue;
+                if (compareItemStacks (stacks[i], pivot) != -1) break;
+            }
+            
+            /* Element on right hand side. */
+            for (; j > pivotId; --j) {
+                if (slotHasFilter (j))  continue;
+                if (compareItemStacks (stacks[j], pivot) != 1) break;
+            }
+
+            /* Exchange two elements that are on the wrong side. */
+            if (i <= j) {
+                exchange (stacks, i, j);
+                i++;
+                j--;
+            }
+        }
+        
+        if (low < j) quicksort (stacks, low, j);
+        if (i < high) quicksort (stacks, i, high);
+      }
+
+      private void exchange (ItemStack[] stacks, int i, int j) {
+          ItemStack temp = stacks[i];
+          stacks[i] = stacks[j];
+          stacks[j] = temp;
+      }
+    
+    
     /* Preserves filtered slots. */
     public void sortInventory () {
         if (worldObj.isRemote) { /* Notify server. */
-            worldObj.addBlockEvent (xCoord, yCoord, zCoord, MagicChest.instance.blockMagicChest.blockID, 2, 0);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream (13);
+            DataOutputStream out = new DataOutputStream (stream);
+            try {
+                out.writeByte (PacketHandler.COMMAND_SORT);
+                out.writeInt (xCoord);
+                out.writeInt (yCoord);
+                out.writeInt (zCoord);
+                PacketDispatcher.sendPacketToServer (new Packet250CustomPayload ("magicchest", stream.toByteArray ()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return;
         }
-        
-        System.out.println ("Sort!");
         
         inventory = sortItemStackArray (inventory);
         onInventoryChanged ();
@@ -232,6 +306,9 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
                 processItemStack (newArray, stack, true, true);
             }
         }
+        
+        /* Sort item list. */
+        quicksort (newArray, 0, INVENTORY_SIZE - 1);
         
         return newArray;
     }
@@ -348,8 +425,6 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     public void receiveClientEvent (int id, int value) {
         if (id == 1) {
             numUsed = value;
-        }else if (id == 2 && !worldObj.isRemote) { /* Sort. */
-            sortInventory ();
         }
     }
     
