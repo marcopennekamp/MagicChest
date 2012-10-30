@@ -239,8 +239,8 @@ public class GuiMagicChest extends GuiScreen {
         pages.add (new PageInventory (this));
         
         // setupPage (new PageOptions (this), 115, 6);
-        setupPage (new PageSorting (this), 89, 6);
-        setupPage (new PageFiltering (this), 97, 6);
+        setupPage (new PageSorting (this), 79, 6);
+        setupPage (new PageFiltering (this), 87, 6);
         for (int i = 0; i < 3; ++i) {
             setupPage (new PageUpgrade (this, i), 108 + i * 8, 6);
         }
@@ -299,9 +299,9 @@ public class GuiMagicChest extends GuiScreen {
             renderHelper.drawPageButton (button.getTexture (), button.x, button.y, button.getState (page, mouseX - offsetX, mouseY - offsetY));
         }
         
-        renderHelper.drawPageButton (1, 79, 6, PageButton.STATE_NORMAL);
-        renderHelper.drawPageButton (2, 99, 6, PageButton.STATE_NORMAL);
-        renderHelper.drawPageButton (3, 136, 6, PageButton.STATE_NORMAL);
+        renderHelper.drawPageButton (1, 71, 6, PageButton.STATE_NORMAL);
+        renderHelper.drawPageButton (2, 100, 6, PageButton.STATE_NORMAL);
+        renderHelper.drawPageButton (3, 137, 6, PageButton.STATE_NORMAL);
         
         /* Draw titles. */
         fontRenderer.drawString (page.getTitle (), 8, 6, 0x404040);
