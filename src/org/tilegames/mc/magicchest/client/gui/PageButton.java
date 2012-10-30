@@ -1,6 +1,6 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-public class IconButton {
+public class PageButton {
     
     public static final int STATE_NORMAL = 0;
     public static final int STATE_HOVER = 1;
@@ -13,7 +13,7 @@ public class IconButton {
     public int x;
     public int y;
     
-    public IconButton (Page page, int x, int y) {
+    public PageButton (Page page, int x, int y) {
         this.page = page;
         this.x = x;
         this.y = y;

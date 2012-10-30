@@ -21,14 +21,13 @@ public class PageFiltering extends Page {
     
     @Override
     public int getButtonTexture () {
-        return 3;
+        return 17;
     }
 
     
     @Override
     public void draw (int mouseX, int mouseY) {
         gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Options.png");
-        
         gui.renderHelper.drawDevelopingBanner (0);
     }
 

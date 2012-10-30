@@ -18,7 +18,7 @@ import cpw.mods.fml.common.asm.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MagicChestRenderer extends TileEntitySpecialRenderer implements ISimpleBlockRenderingHandler {
 
-    private static final String[] textures = {"Oak", "Spruce", "Birch", "Oak"};
+    private static final String[] textures = {"Oak", "Spruce", "Birch", "Jungle"};
     
     private int renderId;
     private ModelMagicChest model;

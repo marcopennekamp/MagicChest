@@ -2,7 +2,7 @@ package org.tilegames.mc.magicchest.client.gui;
 
 public class PageSoftware extends Page {
 
-    public static final int BASE_ID = 104;
+    public static final int BASE_ID = 107;
     
     private int id;
     
@@ -24,18 +24,13 @@ public class PageSoftware extends Page {
     
     @Override
     public int getButtonTexture () {
-        return 0;
-    }
-    
-    public int getId () {
-        return id;
+        return 16;
     }
 
     
     @Override
     public void draw (int mouseX, int mouseY) {
         gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Options.png");
-        
         gui.renderHelper.drawDevelopingBanner (0);
     }
 

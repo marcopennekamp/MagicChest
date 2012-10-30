@@ -154,15 +154,15 @@ public class GuiMagicChest extends GuiScreen {
             }
         }
         
-        public void drawIconButton (int texture, int x, int y, int state) {
+        public void drawPageButton (int texture, int x, int y, int state) {
             double u = (double) (texture % 16) / 16.0;
             double v = Math.floor ((double) texture / 16.0) / 16.0;
             
             double z = zLevel;
             double uEnd = u + 16.0 / 256.0;
             double vEnd = v + 16.0 / 256.0;
-            double xEnd = x + IconButton.WIDTH;
-            double yEnd = y + IconButton.HEIGHT;
+            double xEnd = x + PageButton.WIDTH;
+            double yEnd = y + PageButton.HEIGHT;
             
             Tessellator.instance.startDrawingQuads ();
             Tessellator.instance.addVertexWithUV (x, yEnd, z, u, vEnd);
@@ -171,15 +171,15 @@ public class GuiMagicChest extends GuiScreen {
             Tessellator.instance.addVertexWithUV (x, y, z, u, v);
             Tessellator.instance.draw ();
             
-            if (state != IconButton.STATE_NORMAL) {
+            if (state != PageButton.STATE_NORMAL) {
                 int color;
-                if (state == IconButton.STATE_HOVER) { /* HOVER */
+                if (state == PageButton.STATE_HOVER) { /* HOVER */
                     color = 0x20FFFFFF;
                 }else { /* ACTIVE */
                     color = 0x40FFFFFF;
                 }
                 
-                drawHoverRectangle (x, y, IconButton.WIDTH, IconButton.HEIGHT, color);
+                drawHoverRectangle (x, y, PageButton.WIDTH, PageButton.HEIGHT, color);
             }
         }
         
@@ -210,10 +210,8 @@ public class GuiMagicChest extends GuiScreen {
     public TileEntityMagicChest chest;
     
     
-    
-    public List<IconButton> iconButtons = new ArrayList<IconButton> ();
-    
-    
+    /* All page buttons. */
+    public List<PageButton> pageButtons = new ArrayList<PageButton> ();
     
     /* The page that is currently rendered. */
     private Page page;
@@ -240,9 +238,12 @@ public class GuiMagicChest extends GuiScreen {
         // setupPage (new PageInventory (this), 102, 6);
         pages.add (new PageInventory (this));
         
-        setupPage (new PageOptions (this), 115, 6);
-        setupPage (new PageSorting (this), 123, 6);
-        setupPage (new PageFiltering (this), 131, 6);
+        // setupPage (new PageOptions (this), 115, 6);
+        setupPage (new PageSorting (this), 89, 6);
+        setupPage (new PageFiltering (this), 97, 6);
+        for (int i = 0; i < 3; ++i) {
+            setupPage (new PageUpgrade (this, i), 108 + i * 8, 6);
+        }
         for (int i = 0; i < 3; ++i) {
             setupPage (new PageSoftware (this, i), 145 + i * 8, 6);
         }
@@ -251,10 +252,10 @@ public class GuiMagicChest extends GuiScreen {
     }
     
     private void setupPage (Page page, int x, int y) {
-        IconButton button = new IconButton (page, x, y);
+        PageButton button = new PageButton (page, x, y);
         page.setButton (button);
         pages.add (page);
-        iconButtons.add (button);
+        pageButtons.add (button);
     }
     
     public void initGui () {
@@ -292,11 +293,15 @@ public class GuiMagicChest extends GuiScreen {
         /* Draw icon buttons. */
         renderHelper.bindTexture ("Buttons.png");
         
-        int size = iconButtons.size ();
+        int size = pageButtons.size ();
         for (int i = 0; i < size; ++i) {
-            IconButton button = iconButtons.get (i);
-            renderHelper.drawIconButton (button.getTexture (), button.x, button.y, button.getState (page, mouseX - offsetX, mouseY - offsetY));
+            PageButton button = pageButtons.get (i);
+            renderHelper.drawPageButton (button.getTexture (), button.x, button.y, button.getState (page, mouseX - offsetX, mouseY - offsetY));
         }
+        
+        renderHelper.drawPageButton (1, 79, 6, PageButton.STATE_NORMAL);
+        renderHelper.drawPageButton (2, 99, 6, PageButton.STATE_NORMAL);
+        renderHelper.drawPageButton (3, 136, 6, PageButton.STATE_NORMAL);
         
         /* Draw titles. */
         fontRenderer.drawString (page.getTitle (), 8, 6, 0x404040);
@@ -319,11 +324,11 @@ public class GuiMagicChest extends GuiScreen {
         super.mouseClicked (x, y, mouseButton);
         
         /* Check icon buttons. */
-        int size = iconButtons.size ();
+        int size = pageButtons.size ();
         for (int i = 0; i < size; ++i) {
-            IconButton button = iconButtons.get (i);
+            PageButton button = pageButtons.get (i);
             if (button.inBounds (x - offsetX, y - offsetY)) {
-                onIconButtonClick (button, mouseButton);
+                onPageButtonClick (button, mouseButton);
                 return;
             }
         }
@@ -345,17 +350,19 @@ public class GuiMagicChest extends GuiScreen {
         }
     }
     
-    private void onIconButtonClick (IconButton button, int mouseButton) {
-        this.mc.sndManager.playSoundFX ("random.click", 1.0F, 1.0F);
+    private void onPageButtonClick (PageButton button, int mouseButton) {
+        boolean playSound = false;
         if (mouseButton == 0) {
             if (button.getId () == page.getButtonId ()) {
                 page = new PageInventory (this);
                 return;
             }
             page = pages.get (button.getId () - Page.BASE_ID);
+            playSound = true;
         }else if (mouseButton == 1) {
-            button.getPage ().onIconButtonRightClick ();
+            playSound = button.getPage ().onPageButtonRightClick ();
         }
+        if (playSound) mc.sndManager.playSoundFX ("random.click", 1.0F, 1.0F);
     }
     
 

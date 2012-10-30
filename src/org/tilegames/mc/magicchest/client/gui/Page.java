@@ -1,16 +1,16 @@
 package org.tilegames.mc.magicchest.client.gui;
 
 public abstract class Page {
-    public static final int BASE_ID = 100;
+    public static final int BASE_ID = 101;
     
     protected GuiMagicChest gui;
-    protected IconButton button;
+    protected PageButton button;
     
     public Page (GuiMagicChest gui) {
         this.gui = gui;
     }
     
-    public void setButton (IconButton button) {
+    public void setButton (PageButton button) {
         this.button = button;
     }
     
@@ -18,7 +18,7 @@ public abstract class Page {
     public abstract int getButtonId ();
     public abstract int getButtonTexture ();
     
-    public void onIconButtonRightClick () { }
+    public boolean onPageButtonRightClick () { return false; }
     
     public abstract void draw (int mouseX, int mouseY);
     public abstract boolean onClick (int x, int y, int button);

@@ -22,14 +22,15 @@ public class PageSorting extends Page {
     
     @Override
     public int getButtonTexture () {
-        return 2;
+        return 18;
     }
     
     
     @Override
-    public void onIconButtonRightClick () {
+    public boolean onPageButtonRightClick () {
         /* Sort chest inventory. */
         gui.chest.sortInventory ();
+        return true;
     }
 
     

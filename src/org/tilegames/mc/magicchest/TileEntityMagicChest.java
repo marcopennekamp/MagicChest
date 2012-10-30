@@ -3,7 +3,6 @@ package org.tilegames.mc.magicchest;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -162,20 +161,29 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             if (ignoreFilteredSlots && slotHasFilter (i)) continue;
             
             ItemStack slotStack = array[i];
-            if (canStoreItemInSlot (stack, i)) {
-                if (slotStack == null) { /* Put in empty slot. */
-                    if (storeItem) array[i] = stack;
+            if (slotStack != null && slotStack.isItemEqual (stack)) {
+                int maxAmount = slotStack.getMaxStackSize () - slotStack.stackSize;
+                if (maxAmount >= stackSize) { /* Can put on top of stack. */
+                    if (storeItem) slotStack.stackSize += stackSize;
                     return null;
-                }else if (slotStack.isItemEqual (stack)) { /* Put in not empty slots. */
-                    int maxAmount = slotStack.getMaxStackSize () - slotStack.stackSize;
-                    if (maxAmount >= stackSize) { /* Can put on top of stack. */
-                        if (storeItem) slotStack.stackSize += stackSize;
-                        return null;
-                    }else { /* Can only partially put on top. */
-                        stackSize -= maxAmount;
-                        if (storeItem) slotStack.stackSize += maxAmount;
-                    }
+                }else { /* Can only partially put on top. */
+                    stackSize -= maxAmount;
+                    if (storeItem) slotStack.stackSize += maxAmount;
                 }
+            }
+        }
+        
+        /* Try to put in free places. */
+        for (int i = 0; i < array.length; ++i) {
+            if (ignoreFilteredSlots && slotHasFilter (i)) continue;
+            
+            ItemStack slotStack = array[i];
+            if (slotStack == null && canStoreItemInSlot (stack, i)) {
+                if (storeItem) {
+                    stack.stackSize = stackSize;
+                    array[i] = stack;
+                }
+                return null;
             }
         }
         
@@ -248,7 +256,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         }
         
         /* Sort item list. */
-        Arrays.sort (toSort, ITEM_STACK_COMPARATOR);
+        // Arrays.sort (toSort, ITEM_STACK_COMPARATOR);
         
         /* Update slots. */
         for (int i = 0, j = 0; i < stacks.length; ++i) {
@@ -338,6 +346,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
 
     @Override
     public void setInventorySlotContents (int index, ItemStack stack) {
+        System.out.println ("Hello");
         inventory[index] = stack;
         if (stack != null && stack.stackSize > this.getInventoryStackLimit ()) stack.stackSize = this.getInventoryStackLimit ();
         this.onInventoryChanged ();

@@ -1,27 +1,30 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-public class PageOptions extends Page {
+public class PageUpgrade extends Page {
 
-    public static final int BUTTON_ID = 101;
+    public static final int BASE_ID = 104;
     
-    public PageOptions (GuiMagicChest gui) {
+    private int id;
+    
+    public PageUpgrade (GuiMagicChest gui, int id) {
         super (gui);
+        this.id = id;
     }
     
 
     @Override
     public String getTitle () {
-        return "Options";
+        return "Upgrade";
     }
-    
+
     @Override
     public int getButtonId () {
-        return BUTTON_ID;
+        return BASE_ID + id;
     }
-    
+
     @Override
     public int getButtonTexture () {
-        return 1;
+        return 16;
     }
     
 
