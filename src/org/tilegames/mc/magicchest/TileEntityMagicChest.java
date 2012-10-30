@@ -3,6 +3,7 @@ package org.tilegames.mc.magicchest;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -34,6 +35,8 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     public static final int INVENTORY_COLUMNS = 9;
     public static final int INVENTORY_SIZE = INVENTORY_ROWS * INVENTORY_COLUMNS;
     
+    public static final ItemStackComparator ITEM_STACK_COMPARATOR = new ItemStackComparator ();
+    
     @SideOnly(Side.CLIENT)
     public float lidAngle = 0.0f;
     
@@ -41,6 +44,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     public float previousLidAngle = lidAngle;
     
     public ItemStack[] inventory = new ItemStack[INVENTORY_SIZE];
+    
     
     
     /* Filtering. */
@@ -147,7 +151,6 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     public ItemStack processItemStack (ItemStack stack, boolean storeItem) {
         if (isChestFull) return stack; /* This stack can not be taken anymore. */
-        
         return processItemStack (inventory, stack, storeItem, false);
     }
     
@@ -155,7 +158,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         int stackSize = stack.stackSize;
         
         /* Search for stacks the item can be put in. */
-        for (int i = 0; i < INVENTORY_SIZE; ++i) {
+        for (int i = 0; i < array.length; ++i) {
             if (ignoreFilteredSlots && slotHasFilter (i)) continue;
             
             ItemStack slotStack = array[i];
@@ -210,66 +213,6 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     /* Sorting. */
     
-    /**
-     * 0  - equal
-     * 1  - a > b
-     * -1 - a < b
-     */
-    private int compareItemStacks (ItemStack a, ItemStack b) {
-        /* TODO(Marco): Implement actual compare. */
-        if (a == null && b == null) return 0;
-        else if (a == null) return 1;
-        else if (b == null) return -1;
-        
-        if (a.itemID == b.itemID) return 0;
-        else if (a.itemID > b.itemID) return 1;
-        return -1;
-    }
-    
-    /**
-     * This custom quicksort algorithm basically skips filtered slots.
-     */
-    private void quicksort (ItemStack[] stacks, int low, int high) {
-        int i = low, j = high;
-        
-        int pivotId = low + (high - low) / 2;
-        for (; pivotId < high; ++pivotId) {
-            if (!slotHasFilter (pivotId)) break;
-        }
-        ItemStack pivot = stacks[pivotId];
-
-        while (i <= j) {
-            /* Element on left hand side. */
-            for (; i < pivotId; ++i) {
-                if (slotHasFilter (i)) continue;
-                if (compareItemStacks (stacks[i], pivot) != -1) break;
-            }
-            
-            /* Element on right hand side. */
-            for (; j > pivotId; --j) {
-                if (slotHasFilter (j))  continue;
-                if (compareItemStacks (stacks[j], pivot) != 1) break;
-            }
-
-            /* Exchange two elements that are on the wrong side. */
-            if (i <= j) {
-                exchange (stacks, i, j);
-                i++;
-                j--;
-            }
-        }
-        
-        if (low < j) quicksort (stacks, low, j);
-        if (i < high) quicksort (stacks, i, high);
-      }
-
-      private void exchange (ItemStack[] stacks, int i, int j) {
-          ItemStack temp = stacks[i];
-          stacks[i] = stacks[j];
-          stacks[j] = temp;
-      }
-    
-    
     /* Preserves filtered slots. */
     public void sortInventory () {
         if (worldObj.isRemote) { /* Notify server. */
@@ -292,25 +235,30 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     }
     
     public ItemStack[] sortItemStackArray (ItemStack[] stacks) {
-        ItemStack[] newArray = new ItemStack[stacks.length];
+        ItemStack[] toSort = new ItemStack[stacks.length];
         
         /* Merge item stacks. */
         for (int i = 0; i < stacks.length; ++i) {
-            if (slotHasFilter (i)) {
-                newArray[i] = stacks[i];
-                continue;
-            }
+            if (slotHasFilter (i)) continue;
             
             ItemStack stack = stacks[i];
             if (stack != null) {
-                processItemStack (newArray, stack, true, true);
+                processItemStack (toSort, stack, true, true);
             }
         }
         
         /* Sort item list. */
-        quicksort (newArray, 0, INVENTORY_SIZE - 1);
+        Arrays.sort (toSort, ITEM_STACK_COMPARATOR);
         
-        return newArray;
+        /* Update slots. */
+        for (int i = 0, j = 0; i < stacks.length; ++i) {
+            if (slotHasFilter (i)) continue;
+            
+            stacks[i] = toSort[j];
+            ++j;
+        }
+        
+        return stacks;
     }
     
     
