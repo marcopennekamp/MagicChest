@@ -8,6 +8,10 @@ import net.minecraft.src.StatCollector;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
+@SideOnly (Side.CLIENT)
 public class PageInventory extends Page {
     
     public static final int BUTTON_ID = 100;
@@ -33,9 +37,22 @@ public class PageInventory extends Page {
         return 0;
     }
     
+    @Override
+    public void onPageClose () {
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
+        /* Drop taken ItemStack. 
+         * This is a little tricky. I just pretend that the Player clicked outside the window to make MC drop the stack,
+         * because "dropPlayerItem" did not want to work correctly...
+         */
+        gui.getMinecraft ().playerController.windowClick (gui.container.windowId, -999, 0, 0, gui.getMinecraft ().thePlayer);
+    }
+    
 
     @Override
     public void draw (int mouseX, int mouseY) {
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
         InventoryPlayer playerInventory = gui.getInventoryPlayer ();
         
         /* Draw background. */
@@ -83,11 +100,13 @@ public class PageInventory extends Page {
 
     @Override
     public boolean onClick (int x, int y, int button) {
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
         boolean blockPickPressed = button == gui.getMinecraft ().gameSettings.keyBindPickBlock.keyCode + 100;
 
         if (button == 0 || button == 1 || blockPickPressed) {
             Slot slot = getSlotAtPosition (x, y);
-            boolean dropItem = x < gui.offsetX || y < gui.offsetY || x >= gui.offsetX + GuiMagicChest.SIZE_X || y >= gui.offsetY + GuiMagicChest.SIZE_Y;
+            boolean dropItem = x < gui.offsetX || y < gui.offsetY || x >= gui.offsetX + gui.sizeX || y >= gui.offsetY + gui.sizeY;
             int slotId = -1;
 
             if (slot != null) slotId = slot.slotNumber;
@@ -109,6 +128,8 @@ public class PageInventory extends Page {
     
     @Override
     public boolean onKeyType (char character, int key) {
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
         if (gui.getInventoryPlayer ().getItemStack () == null && hoveredSlot != null) {
             for (int i = 0; i < 9; ++i) {
                 if (key == 2 + i) {
@@ -126,6 +147,8 @@ public class PageInventory extends Page {
     
     
     private Slot getSlotAtPosition (int x, int y) {
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
         int size = gui.container.inventorySlots.size ();
         for (int i = 0; i < size; ++i) {
             Slot slot = (Slot) gui.container.inventorySlots.get (i);
@@ -135,6 +158,8 @@ public class PageInventory extends Page {
     }
     
     private void handleMouseClick (Slot slot, int id, int button, int transferStack) { /* TODO(Marco): Really 'button'? */
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
         if (slot != null) id = slot.slotNumber;
         gui.getMinecraft ().playerController.windowClick (gui.container.windowId, id, button, transferStack, gui.getMinecraft ().thePlayer);
     }

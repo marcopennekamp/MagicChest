@@ -1,10 +1,16 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import MagicChest.common.MagicChest;
+
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
+@SideOnly (Side.CLIENT)
 public class PageFiltering extends Page {
 
     public static final int BUTTON_ID = 103;
     
-    public PageFiltering(GuiMagicChest gui) {
+    public PageFiltering (GuiPage gui) {
         super (gui);
     }
 
@@ -22,6 +28,12 @@ public class PageFiltering extends Page {
     @Override
     public int getButtonTexture () {
         return 17;
+    }
+    
+    
+    @Override
+    public void onPageOpen () {
+        gui.getMinecraft ().thePlayer.openGui (MagicChest.instance, 1, gui.chest.worldObj, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
     }
 
     

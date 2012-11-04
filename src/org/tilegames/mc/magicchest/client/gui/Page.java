@@ -1,12 +1,16 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
+@SideOnly (Side.CLIENT)
 public abstract class Page {
     public static final int BASE_ID = 101;
     
-    protected GuiMagicChest gui;
+    protected GuiPage gui;
     protected PageButton button;
     
-    public Page (GuiMagicChest gui) {
+    public Page (GuiPage gui) {
         this.gui = gui;
     }
     
@@ -19,6 +23,9 @@ public abstract class Page {
     public abstract int getButtonTexture ();
     
     public boolean onPageButtonRightClick () { return false; }
+    
+    public void onPageOpen () { }
+    public void onPageClose () { }
     
     public abstract void draw (int mouseX, int mouseY);
     public abstract boolean onClick (int x, int y, int button);

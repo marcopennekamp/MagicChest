@@ -3,6 +3,7 @@ package org.tilegames.mc.magicchest;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -256,7 +257,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         }
         
         /* Sort item list. */
-        // Arrays.sort (toSort, ITEM_STACK_COMPARATOR);
+        Arrays.sort (toSort, ITEM_STACK_COMPARATOR);
         
         /* Update slots. */
         for (int i = 0, j = 0; i < stacks.length; ++i) {
@@ -346,7 +347,6 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
 
     @Override
     public void setInventorySlotContents (int index, ItemStack stack) {
-        System.out.println ("Hello");
         inventory[index] = stack;
         if (stack != null && stack.stackSize > this.getInventoryStackLimit ()) stack.stackSize = this.getInventoryStackLimit ();
         this.onInventoryChanged ();

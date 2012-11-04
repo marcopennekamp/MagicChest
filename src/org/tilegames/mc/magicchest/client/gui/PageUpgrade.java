@@ -1,12 +1,16 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
+@SideOnly (Side.CLIENT)
 public class PageUpgrade extends Page {
 
     public static final int BASE_ID = 104;
     
     private int id;
     
-    public PageUpgrade (GuiMagicChest gui, int id) {
+    public PageUpgrade (GuiPage gui, int id) {
         super (gui);
         this.id = id;
     }

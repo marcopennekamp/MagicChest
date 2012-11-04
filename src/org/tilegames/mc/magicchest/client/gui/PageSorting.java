@@ -1,6 +1,9 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
 
+@SideOnly (Side.CLIENT)
 public class PageSorting extends Page {
 
     public static final int BUTTON_ID = 102;
@@ -28,6 +31,8 @@ public class PageSorting extends Page {
     
     @Override
     public boolean onPageButtonRightClick () {
+        GuiMagicChest gui = (GuiMagicChest) this.gui;
+        
         /* Sort chest inventory. */
         gui.chest.sortInventory ();
         return true;
@@ -39,8 +44,8 @@ public class PageSorting extends Page {
         gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Options.png");
         
         String str = "Right click on the Sorting button above to sort the inventory by category!";
-        final int maxWidth = GuiMagicChest.SIZE_X - 16;
-        gui.getFontRenderer ().drawSplitString (str, (GuiMagicChest.SIZE_X - maxWidth) / 2, 20, maxWidth, 0x404040);
+        final int maxWidth = gui.sizeX - 16;
+        gui.getFontRenderer ().drawSplitString (str, (gui.sizeY - maxWidth) / 2, 20, maxWidth, 0x404040);
         
         gui.renderHelper.drawDevelopingBanner (20);
     }

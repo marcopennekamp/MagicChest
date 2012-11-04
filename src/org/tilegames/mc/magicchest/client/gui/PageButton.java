@@ -1,5 +1,9 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
+@SideOnly (Side.CLIENT)
 public class PageButton {
     
     public static final int STATE_NORMAL = 0;

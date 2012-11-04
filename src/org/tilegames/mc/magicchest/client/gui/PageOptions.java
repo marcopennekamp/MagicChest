@@ -1,10 +1,14 @@
 package org.tilegames.mc.magicchest.client.gui;
 
+import cpw.mods.fml.common.Side;
+import cpw.mods.fml.common.asm.SideOnly;
+
+@SideOnly (Side.CLIENT)
 public class PageOptions extends Page {
 
     public static final int BUTTON_ID = 101;
     
-    public PageOptions (GuiMagicChest gui) {
+    public PageOptions (GuiPage gui) {
         super (gui);
     }
     
