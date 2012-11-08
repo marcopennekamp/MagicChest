@@ -1,6 +1,11 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-import MagicChest.common.MagicChest;
+import net.minecraft.src.ItemStack;
+import net.minecraft.src.OpenGlHelper;
+
+import org.lwjgl.opengl.GL11;
+import org.tilegames.mc.magicchest.filter.FilteringProfile;
+import org.tilegames.mc.magicchest.network.PacketHandler;
 
 import cpw.mods.fml.common.Side;
 import cpw.mods.fml.common.asm.SideOnly;
@@ -33,18 +38,94 @@ public class PageFiltering extends Page {
     
     @Override
     public void onPageOpen () {
-        gui.getMinecraft ().thePlayer.openGui (MagicChest.instance, 0x00000001, gui.chest.worldObj, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
+    	// PacketHandler.sendPacketOpenGui (1, 0, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
+    	
     }
-
     
     @Override
     public void draw (int mouseX, int mouseY) {
-        gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Options.png");
-        gui.renderHelper.drawDevelopingBanner (0);
+    	GuiMagicChest gui = (GuiMagicChest) this.gui;
+    	
+        gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Filtering.png");
+
+        /* Draw chest filtering slot background. */
+        double u = 0.0;
+        double v = 168.0 / 256.0;
+        double uEnd = u + 32.0 / 256.0;
+        double vEnd = v + 32.0 / 256.0;
+        double x = 152.0;
+        double y = 76.0;
+        double xEnd = x + 16.0;
+        double yEnd = y + 16.0;
+        gui.renderHelper.drawRectangle (x, y, xEnd, yEnd, gui.getZLevel (), u, v, uEnd, vEnd);
+
+        /* Set Lightmap. */
+        short var6 = 240;
+        short var7 = 240;
+        OpenGlHelper.setLightmapTextureCoords (OpenGlHelper.lightmapTexUnit, (float) var6 / 1.0F, (float) var7 / 1.0F);
+        GL11.glColor4f (1.0F, 1.0F, 1.0F, 1.0F);
+        
+        /* The ItemStack that is currently hovered. */
+        ItemStack selectedItemStack = null;
+        
+        /* Draw slot items. */
+        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.slotItems, 8, 18, mouseX, mouseY, FilteringProfile.COLUMNS, FilteringProfile.ROWS, 0);
+        
+        /* Draw row items. */
+        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.rowItems, 8, 76, mouseX, mouseY, FilteringProfile.ROWS, 1, 0);
+        
+        /* Draw chest item. */
+        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.chestItems, 152, 76, mouseX, mouseY, 1, 1, 0);
+        
+        /* Draw Tooltip. */
+        if (selectedItemStack != null) { 
+            gui.renderHelper.drawTooltip (selectedItemStack, mouseX - gui.offsetX, mouseY - gui.offsetY);
+        }
     }
 
+    private int checkSlotClicks (int mouseX, int mouseY, int slotX, int slotY, int columns, int rows) {
+    	int slotXEnd = slotX + 18 * columns;
+    	int slotYEnd = slotY + 18 * rows;
+    	if (mouseX >= slotX - 1 && mouseX <= slotXEnd + 1 && mouseY >= slotY - 1 && mouseY <= slotYEnd + 1) {
+			return (mouseY - slotY + 1) / 18 * columns + (mouseX - slotX + 1) / 18;
+    	}
+    	return -1;
+    }
+    
     @Override
     public boolean onClick (int x, int y, int button) {
+    	if (button != 0 && button != 1) return false;
+    	
+    	GuiMagicChest gui = (GuiMagicChest) this.gui;
+
+    	x -= gui.offsetX;
+    	y -= gui.offsetY;
+    	
+    	int id;
+    	
+    	/* Check for slot items click. */
+    	id = checkSlotClicks (x, y, 8, 18, FilteringProfile.COLUMNS, FilteringProfile.ROWS);
+    	
+    	/* Check for row items click. */
+    	if (id == -1) {
+    		id = checkSlotClicks (x, y, 8, 76, FilteringProfile.ROWS, 1);
+    		if (id != -1) id += FilteringProfile.SIZE;
+    	}
+    	
+    	/* Check for chest items click. */
+    	if (id == -1) {
+    		id = checkSlotClicks (x, y, 152, 76, 1, 1);
+    		if (id != -1) id += FilteringProfile.SIZE + FilteringProfile.ROWS;
+    	}
+    	
+    	/* Slot clicked -> Open ItemBrowser. */
+    	if (id != -1) {
+    		System.out.println (id);
+    		
+    		/* Open Item Browser GUI. */
+	    	PacketHandler.sendPacketOpenGui (1, id, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
+	    	return true;
+    	}
         return false;
     }
 

@@ -13,9 +13,9 @@ public class FilteringProfile {
     private ItemStack[] cache = new ItemStack[SIZE];
     
     /* The options for chest, row and slot filtering. */
-    private ItemStack chestItem = null;
-    private ItemStack[] rowItems = null;
-    private ItemStack[] items = null;
+    public ItemStack[] chestItems = null;
+    public ItemStack[] rowItems = null;
+    public ItemStack[] slotItems = null;
     
     
     /** 
@@ -24,8 +24,8 @@ public class FilteringProfile {
     private void updateCache (int start, int end) {
         for (int i = start; i < end; ++i) {
             /* Check for slot filtering. */
-            if (items != null) {
-                ItemStack item = items[i];
+            if (slotItems != null) {
+                ItemStack item = slotItems[i];
                 if (item != null) {
                     cache[i] = item;
                     continue;
@@ -42,9 +42,11 @@ public class FilteringProfile {
             }
             
             /* Check for chest filtering. */
-            if (chestItem != null) {
-                cache[i] = chestItem;
-                continue;
+            if (chestItems != null) {
+            	if (chestItems[0] != null) {
+            		cache[i] = chestItems[0];
+            		continue;
+            	}
             }
         }
     }
@@ -76,8 +78,9 @@ public class FilteringProfile {
      * Set the item for chest filtering. 
      */
     public void setChestItem (ItemStack item) {
-        chestItem = item;
-        
+    	boolean delete = setFilteringItemInArray (chestItems, 1, 0, item);
+        if (delete) chestItems = null;
+    	
         updateCache (0, SIZE);
     }
     
@@ -101,8 +104,8 @@ public class FilteringProfile {
     public void setSlotItem (int index, ItemStack item) {
         if (index >= SIZE) return;
         
-        boolean delete = setFilteringItemInArray (items, SIZE, index, item);
-        if (delete) items = null;
+        boolean delete = setFilteringItemInArray (slotItems, SIZE, index, item);
+        if (delete) slotItems = null;
         
         updateCache (index, index + 1);
     }

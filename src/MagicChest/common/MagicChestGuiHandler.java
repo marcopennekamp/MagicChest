@@ -4,6 +4,7 @@ import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
+import org.tilegames.mc.magicchest.ContainerFilteringItemBrowser;
 import org.tilegames.mc.magicchest.ContainerMagicChest;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 import org.tilegames.mc.magicchest.client.gui.GuiFilteringItemBrowser;
@@ -14,15 +15,17 @@ import cpw.mods.fml.common.network.IGuiHandler;
 public class MagicChestGuiHandler implements IGuiHandler {
 
     @Override
-    public Object getServerGuiElement (int id, EntityPlayer player, World world, int x, int y, int z) {
+    public Object getServerGuiElement (int data, EntityPlayer player, World world, int x, int y, int z) {
         TileEntity tileEntity = world.getBlockTileEntity (x, y, z);
         if (tileEntity instanceof TileEntityMagicChest) {
             TileEntityMagicChest chest = (TileEntityMagicChest) tileEntity;
+            int id = data & 0xFF;
+        	// int param = data & 0xFF00;
             if (id == 0) { /* Magic Chest Gui. */
                 chest.openChest ();
                 return new ContainerMagicChest (player.inventory, chest);
-            }else if ((id & 0x000000FF) == 1) { /* Filtering Item Browser. */
-                return null;
+            }else if (id == 1) { /* Filtering Item Browser. */
+                return new ContainerFilteringItemBrowser ();
             }
         }
         return null;
@@ -30,15 +33,17 @@ public class MagicChestGuiHandler implements IGuiHandler {
 
 
     @Override
-    public Object getClientGuiElement (int id, EntityPlayer player, World world, int x, int y, int z) {
+    public Object getClientGuiElement (int data, EntityPlayer player, World world, int x, int y, int z) {
         TileEntity tileEntity = world.getBlockTileEntity (x, y, z);
         if (tileEntity instanceof TileEntityMagicChest){
             TileEntityMagicChest chest = (TileEntityMagicChest) tileEntity;
+            int id = data & 0xFF;
+        	int param = data & 0xFF00;
             if (id == 0) {
                 chest.openChest ();
-                return new GuiMagicChest (player.inventory, chest);
-            }else if ((id & 0x000000FF) == 1) {
-                return new GuiFilteringItemBrowser (chest, (id & 0x0000FF00) >> 8);
+                return new GuiMagicChest (player.inventory, chest, param);
+            }else if (id == 1) {
+                return new GuiFilteringItemBrowser (chest, param);
             }
         }
         return null;

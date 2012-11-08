@@ -173,12 +173,7 @@ public abstract class GuiPage extends GuiScreen {
             double xEnd = x + PageButton.WIDTH;
             double yEnd = y + PageButton.HEIGHT;
             
-            Tessellator.instance.startDrawingQuads ();
-            Tessellator.instance.addVertexWithUV (x, yEnd, z, u, vEnd);
-            Tessellator.instance.addVertexWithUV (xEnd, yEnd, z, uEnd, vEnd);
-            Tessellator.instance.addVertexWithUV (xEnd, y, z, uEnd, v);
-            Tessellator.instance.addVertexWithUV (x, y, z, u, v);
-            Tessellator.instance.draw ();
+            drawRectangle (x, y, xEnd, yEnd, z, u, v, uEnd, vEnd);
             
             if (state != PageButton.STATE_NORMAL) {
                 int color;
@@ -206,6 +201,46 @@ public abstract class GuiPage extends GuiScreen {
             fontRenderer.drawString (string, (sizeX - fontRenderer.getStringWidth (string)) / 2, y + height + 5, 0x404040);
         }
         
+        public void drawRectangle (double x, double y, double xEnd, double yEnd , double z, double u, double v, double uEnd, double vEnd) {
+        	Tessellator.instance.startDrawingQuads ();
+            Tessellator.instance.addVertexWithUV (x, yEnd, z, u, vEnd);
+            Tessellator.instance.addVertexWithUV (xEnd, yEnd, z, uEnd, vEnd);
+            Tessellator.instance.addVertexWithUV (xEnd, y, z, uEnd, v);
+            Tessellator.instance.addVertexWithUV (x, y, z, u, v);
+            Tessellator.instance.draw ();
+        }
+        
+        /** Returns the hovered ItemStack. */
+        public ItemStack drawItemStacks (ItemStack[] items, int posX, int posY, int mouseX, int mouseY, int columns, int rows, int start) {
+        	ItemStack hoveredItemStack = null;
+        	int i = start;
+            int end = start + columns * rows;
+            if (items != null && end > items.length) end = items.length;
+        	for (int y = posY; y < posY + 18 * rows; y += 18) {
+        		for (int x = posX; x < posX + 18 * columns; x += 18) {
+            		ItemStack stack = null;
+            		if (items != null && i < end) stack = items[i];
+            		
+            		/* Draw Item Stack. */
+            		if (stack != null) {
+    	        		setZLevel (100.0f);
+    	        		drawItemStack (stack, x, y);
+    	        		setZLevel (0.0f);
+            		}
+            		
+            		/* Check hover status. */
+                    if (renderHelper.pointInRectangle (x, y, 16, 16, mouseX, mouseY)) {
+                        hoveredItemStack = stack;
+                        drawHoverRectangle (x, y, 16, 16, 0x80FFFFFF);
+                    }
+            		
+            		++i;
+            	}
+            }
+        	
+        	return hoveredItemStack;
+        }
+        
         public boolean pointInRectangle (int x, int y, int width, int height, int px, int py) {
             px -= offsetX;
             py -= offsetY;
@@ -224,11 +259,10 @@ public abstract class GuiPage extends GuiScreen {
     }
     
     
-    public GuiPage (TileEntityMagicChest chest) {
+    public GuiPage (TileEntityMagicChest chest, int pageId) {
         renderHelper = new RenderHelper ();
-        page = setupPages ();
+        page = setupPages (pageId);
         this.chest = chest;
-        
     }
     
     
@@ -293,7 +327,7 @@ public abstract class GuiPage extends GuiScreen {
     public abstract void drawForeground ();
     
     public Page getSelectedPage (PageButton button) { return null; }
-    public abstract Page setupPages ();
+    public abstract Page setupPages (int pageId);
     
     public boolean closeGui () { return false; }
     

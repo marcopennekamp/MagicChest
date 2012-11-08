@@ -9,15 +9,14 @@ import net.minecraft.src.ItemStack;
 
 import org.lwjgl.input.Mouse;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
-
-import MagicChest.common.MagicChest;
+import org.tilegames.mc.magicchest.network.PacketHandler;
 
 import cpw.mods.fml.common.Side;
 import cpw.mods.fml.common.asm.SideOnly;
 
 @SideOnly (Side.CLIENT)
 public class GuiFilteringItemBrowser extends GuiPage {
-	public static List<ItemStack> items;
+	public static ItemStack[] items;
 	
 	private float scroll = 0.0f;
 	public int rowCount = 0;
@@ -26,22 +25,23 @@ public class GuiFilteringItemBrowser extends GuiPage {
 	public int filteringSlot;
 	
     public GuiFilteringItemBrowser (TileEntityMagicChest chest, int filteringSlot) {
-        super (chest);
+        super (chest, 0);
         
         this.filteringSlot = filteringSlot;
         
-        /* Create the displayed item list. */
         if (items == null) {
-        	items = new ArrayList<ItemStack> (256);
+        	List<ItemStack> itemArrayList = new ArrayList<ItemStack> (256);
         	Item[] itemList = Item.itemsList;
     		for (int i = 0; i < itemList.length; ++i) {
     			Item item = itemList[i];
     			if (item != null) {
     				if (item.getCreativeTab () != null)
-    					item.getSubItems (item.shiftedIndex, CreativeTabs.tabAllSearch, items);
+    					item.getSubItems (item.shiftedIndex, CreativeTabs.tabAllSearch, itemArrayList);
     			}
     		}
-    		rowCount = (int) Math.ceil (items.size () / 9.0f);
+    		rowCount = (int) Math.ceil (itemArrayList.size () / 9.0f);
+    		items = new ItemStack[itemArrayList.size ()];
+    		items = itemArrayList.toArray (items);
     	}
         
         sizeX = 194;
@@ -49,7 +49,7 @@ public class GuiFilteringItemBrowser extends GuiPage {
     }
 
     @Override
-    public Page setupPages () {
+    public Page setupPages (int pageId) {
         return new PageInventoryTab (this, 0);
     }
 
@@ -75,7 +75,7 @@ public class GuiFilteringItemBrowser extends GuiPage {
     
     @Override
     public boolean closeGui () {
-        getMinecraft ().thePlayer.openGui (MagicChest.instance, 0, chest.worldObj, chest.xCoord, chest.yCoord, chest.zCoord);
+    	PacketHandler.sendPacketOpenGui (0, 0, chest.xCoord, chest.yCoord, chest.zCoord);
         return true;
     }
     

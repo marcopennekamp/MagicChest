@@ -17,20 +17,25 @@ import cpw.mods.fml.common.asm.SideOnly;
 public class GuiMagicChest extends GuiPage {
     public ContainerMagicChest container;
     
-    public GuiMagicChest (IInventory playerInventory, TileEntityMagicChest chest) {
-        super (chest);
+    public static final int PAGE_INVENTORY = 0;
+    public static final int PAGE_SORTING = 1;
+    public static final int PAGE_FILTERING = 2;
+    public static final int PAGE_UPGRADE_1 = 3;
+    public static final int PAGE_SOFTWARE_1 = 6;
+    
+    
+    public GuiMagicChest (IInventory playerInventory, TileEntityMagicChest chest, int pageId) {
+        super (chest, pageId);
         
         sizeX = 176;
         sizeY = 168;
-        
-        System.out.println (playerInventory + " " + chest);
         
         container = new ContainerMagicChest (playerInventory, chest);
     }
     
     
     @Override
-    public Page setupPages () {
+    public Page setupPages (int pageId) {
         pages.add (new PageInventory (this));
         
         setupPage (new PageSorting (this), 79, 6);
@@ -42,7 +47,7 @@ public class GuiMagicChest extends GuiPage {
             setupPage (new PageSoftware (this, i), 145 + i * 8, 6);
         }
         
-        return pages.get (0);
+        return pages.get (pageId);
     }
     
     public void initGui () {
