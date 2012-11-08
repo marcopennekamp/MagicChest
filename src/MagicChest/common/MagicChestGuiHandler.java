@@ -21,7 +21,7 @@ public class MagicChestGuiHandler implements IGuiHandler {
             if (id == 0) { /* Magic Chest Gui. */
                 chest.openChest ();
                 return new ContainerMagicChest (player.inventory, chest);
-            }else if (id == 1) { /* Filtering Item Browser. */
+            }else if ((id & 0x000000FF) == 1) { /* Filtering Item Browser. */
                 return null;
             }
         }
@@ -37,8 +37,8 @@ public class MagicChestGuiHandler implements IGuiHandler {
             if (id == 0) {
                 chest.openChest ();
                 return new GuiMagicChest (player.inventory, chest);
-            }else if (id == 1) {
-                return new GuiFilteringItemBrowser (chest);
+            }else if ((id & 0x000000FF) == 1) {
+                return new GuiFilteringItemBrowser (chest, (id & 0x0000FF00) >> 8);
             }
         }
         return null;

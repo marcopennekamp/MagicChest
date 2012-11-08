@@ -6,7 +6,7 @@ import cpw.mods.fml.common.asm.SideOnly;
 @SideOnly (Side.CLIENT)
 public class PageSorting extends Page {
 
-    public static final int BUTTON_ID = 102;
+    public static final int BUTTON_ID = Page.BASE_ID + 1;
     
     public PageSorting (GuiMagicChest gui) {
         super (gui);

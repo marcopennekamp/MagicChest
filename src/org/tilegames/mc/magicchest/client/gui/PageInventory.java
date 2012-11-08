@@ -64,7 +64,7 @@ public class PageInventory extends Page {
         /* Draw slots. */
         hoveredSlot = null;
         
-        /* ???? */
+        /* Set Lightmap. */
         short var6 = 240;
         short var7 = 240;
         OpenGlHelper.setLightmapTextureCoords (OpenGlHelper.lightmapTexUnit, (float) var6 / 1.0F, (float) var7 / 1.0F);

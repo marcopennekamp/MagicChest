@@ -23,6 +23,8 @@ public class GuiMagicChest extends GuiPage {
         sizeX = 176;
         sizeY = 168;
         
+        System.out.println (playerInventory + " " + chest);
+        
         container = new ContainerMagicChest (playerInventory, chest);
     }
     

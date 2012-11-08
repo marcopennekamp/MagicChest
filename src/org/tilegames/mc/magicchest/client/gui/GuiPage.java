@@ -72,7 +72,7 @@ public abstract class GuiPage extends GuiScreen {
             RenderEngine renderEngine = getRenderEngine ();
             
             GL11.glEnable (GL11.GL_DEPTH_TEST);
-            itemRenderer.func_82406_b (fontRenderer, renderEngine, stack, x, y);
+            itemRenderer.renderItemIntoGUI (fontRenderer, renderEngine, stack, x, y);
             itemRenderer.renderItemOverlayIntoGUI (fontRenderer, renderEngine, stack, x, y);
         }
         
@@ -105,7 +105,7 @@ public abstract class GuiPage extends GuiScreen {
             GL11.glDisable (GL11.GL_DEPTH_TEST);
             
             @SuppressWarnings("rawtypes")
-            List strings = stack.func_82840_a (mc.thePlayer, mc.gameSettings.field_82882_x);
+            List strings = stack.getTooltip (mc.thePlayer, mc.gameSettings.advancedItemTooltips);
 
             if (!strings.isEmpty ()) {
                 int size = strings.size();

@@ -6,7 +6,7 @@ import cpw.mods.fml.common.asm.SideOnly;
 @SideOnly (Side.CLIENT)
 public class PageOptions extends Page {
 
-    public static final int BUTTON_ID = 101;
+    public static final int BUTTON_ID = Page.BASE_ID + 0;
     
     public PageOptions (GuiPage gui) {
         super (gui);

@@ -48,7 +48,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     
     /* Filtering. */
-    public FilteringProfile filteringCache = null;
+    public FilteringProfile filteringCache = new FilteringProfile ();
     
     
     public int numUsed = 0;

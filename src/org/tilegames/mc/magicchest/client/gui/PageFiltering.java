@@ -8,7 +8,7 @@ import cpw.mods.fml.common.asm.SideOnly;
 @SideOnly (Side.CLIENT)
 public class PageFiltering extends Page {
 
-    public static final int BUTTON_ID = 103;
+    public static final int BUTTON_ID = Page.BASE_ID + 2;
     
     public PageFiltering (GuiPage gui) {
         super (gui);
@@ -33,7 +33,7 @@ public class PageFiltering extends Page {
     
     @Override
     public void onPageOpen () {
-        gui.getMinecraft ().thePlayer.openGui (MagicChest.instance, 1, gui.chest.worldObj, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
+        gui.getMinecraft ().thePlayer.openGui (MagicChest.instance, 0x00000001, gui.chest.worldObj, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
     }
 
     

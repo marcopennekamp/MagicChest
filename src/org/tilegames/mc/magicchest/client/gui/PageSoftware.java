@@ -6,7 +6,7 @@ import cpw.mods.fml.common.asm.SideOnly;
 @SideOnly (Side.CLIENT)
 public class PageSoftware extends Page {
 
-    public static final int BASE_ID = 107;
+    public static final int BUTTON_ID = Page.BASE_ID + 6;
     
     private int id;
     
@@ -23,7 +23,7 @@ public class PageSoftware extends Page {
 
     @Override
     public int getButtonId () {
-        return BASE_ID + id;
+        return BUTTON_ID + id;
     }
     
     @Override

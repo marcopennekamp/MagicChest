@@ -38,8 +38,8 @@ public class ContainerMagicChest extends Container {
         }
     }
     
-    @Override /* transferStackInSlot */
-    public ItemStack func_82846_b (EntityPlayer par1EntityPlayer, int slotId) {
+    @Override
+    public ItemStack transferStackInSlot (EntityPlayer par1EntityPlayer, int slotId) {
         Slot slot = (Slot) inventorySlots.get (slotId);
         ItemStack itemStack = null;
         
