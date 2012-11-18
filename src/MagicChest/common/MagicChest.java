@@ -32,7 +32,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
 
-@Mod (modid = "Tilegames_MagicChest", name = "MagicChest", version = "1.0 alpha")
+@Mod (modid = "Tilegames_MagicChest", name = "MagicChest", version = "1.0.1 alpha")
 @NetworkMod (clientSideRequired = true, serverSideRequired = false)
 public class MagicChest {
     

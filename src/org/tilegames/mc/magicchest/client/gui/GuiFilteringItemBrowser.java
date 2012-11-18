@@ -20,9 +20,11 @@ public class GuiFilteringItemBrowser extends GuiPage {
 
     public static ItemStack[] items;
 	
-	private float scroll = 0.0f;
+	public float scroll = 0.0f;
 	public int rowCount = 0;
 	public int row = 0;
+	
+	public boolean isScrolling = false;
 	
 	public int filteringSlot;
 	
@@ -57,7 +59,31 @@ public class GuiFilteringItemBrowser extends GuiPage {
 
     @Override
     public void drawForeground () {
+        
+    }
+    
+    private void setScroll (float scroll) {
+        if (scroll < 0.0f) scroll = 0.0f;
+        if (scroll > 1.0f) scroll = 1.0f;
+        row = (int) (scroll * (rowCount - 6));
+        this.scroll = scroll;
+    }
+    
+    @Override
+    public void update (int mouseX, int mouseY) {
+        boolean mouseDown = Mouse.isButtonDown(0);
+        int x = offsetX + 174;
+        int y = offsetY + 18;
+        int endX = x + 12;
+        int endY = y + 116;
 
+        if (mouseDown && mouseX >= x && mouseX <= endX && mouseY >= y && mouseY <= endY) {
+            isScrolling = true;
+        }else if (!mouseDown) {
+            isScrolling = false;
+        }
+
+        if (isScrolling) setScroll (((float) (mouseY - y) - 7.5F) / ((float) (endY - y) - 15.0F));
     }
     
     @Override
@@ -67,11 +93,8 @@ public class GuiFilteringItemBrowser extends GuiPage {
         int wheel = Mouse.getEventDWheel ();
         if (wheel != 0 && rowCount > 6) {
         	int scrollStages = rowCount - 6;
-        	double direction = (wheel > 0.0f) ? 1.0 : -1.0;
-        	scroll -= direction / scrollStages;
-        	if (scroll > 1.0f) scroll = 1.0f;
-        	else if (scroll < 0.0f) scroll = 0.0f;
-        	row = (int) (scroll * rowCount);
+        	float direction = (wheel > 0.0f) ? 1.0f : -1.0f;
+        	setScroll (scroll - direction / scrollStages);
         }
     }
     

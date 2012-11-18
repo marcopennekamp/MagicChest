@@ -6,7 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import net.minecraft.src.Entity;
 import net.minecraft.src.EntityClientPlayerMP;
+import net.minecraft.src.EntityItem;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.INetworkManager;
@@ -20,13 +22,20 @@ import cpw.mods.fml.common.network.Player;
 
 public class PacketHandler implements IPacketHandler {
 
+    public static final int TARGET_SERVER = 0x00;
+    public static final int TARGET_ALL_CLIENTS = 0x01;
+    public static final int TARGET_PLAYER = 0x02;
+    
     public static final int COMMAND_OPEN_GUI = 0x10;
     
-    public static final int COMMAND_CHEST_SORT = 0x20;
-    public static final int COMMAND_CHEST_SET_FILTER_ITEM = 0x21;
+    public static final int COMMAND_CHEST_REQUEST_UPDATE = 0x20;
+    public static final int COMMAND_CHEST_SORT = 0x21;
+    public static final int COMMAND_CHEST_SET_FILTER_ITEM = 0x22;
+    
+    public static final int COMMAND_UPDATE_ITEM = 0x30;
     
     
-    private static void writePacket (int command, Info info, boolean toClients, int dimensionId) {
+    private static void writePacket (int command, Info info, int target, int dimensionId, Player player) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream (1 + info.size ());
         DataOutputStream out = new DataOutputStream (stream);
         try {
@@ -37,21 +46,46 @@ public class PacketHandler implements IPacketHandler {
         }
         
         Packet packet = new Packet250CustomPayload ("magicchest", stream.toByteArray ());
-        if (toClients) PacketDispatcher.sendPacketToAllInDimension (packet, dimensionId);
-        else PacketDispatcher.sendPacketToServer (packet);
+        
+        if (target == 0) {
+            PacketDispatcher.sendPacketToServer (packet);
+        }else if (target == 1) {
+            PacketDispatcher.sendPacketToAllInDimension (packet, dimensionId);
+        }else if (target == 2) {
+            PacketDispatcher.sendPacketToPlayer (packet, player);
+        }
     }
     
     public static void sendPacketOpenGui (TileEntity tileEntity, int guiId, int param) {
-        writePacket (COMMAND_OPEN_GUI, new InfoOpenGui (tileEntity, guiId, param), false, 0);
+        writePacket (COMMAND_OPEN_GUI, new InfoOpenGui (tileEntity, guiId, param), TARGET_SERVER, 0, null);
     }
     
     public static void sendPacketChestSort (TileEntity tileEntity) {
-        writePacket (COMMAND_CHEST_SORT, new InfoChestSort (tileEntity), false, 0);
+        writePacket (COMMAND_CHEST_SORT, new InfoChestSort (tileEntity), TARGET_SERVER, 0, null);
     }
     
-    public static void sendPacketChestSetFilterItem (TileEntity tileEntity, int slot, ItemStack stack, boolean toClients) {
-        writePacket (COMMAND_CHEST_SET_FILTER_ITEM, new InfoChestSetFilterItem (tileEntity, slot, stack), 
-                toClients, tileEntity.worldObj.getWorldInfo ().getDimension ());
+    public static void sendPacketChestSetFilterItem (TileEntity tileEntity, int[] indices, ItemStack[] stacks, int target, Player player) {
+        writePacket (COMMAND_CHEST_SET_FILTER_ITEM, new InfoChestSetFilterItem (tileEntity, indices, stacks), 
+                target, tileEntity.worldObj.getWorldInfo ().getDimension (), player);
+    }
+    
+    public static void sendPacketChestRequestUpdate (TileEntity tileEntity) {
+        writePacket (COMMAND_CHEST_REQUEST_UPDATE, new InfoChestRequestUpdate (tileEntity), TARGET_SERVER, 0, null);
+    }
+    
+    public static void sendPacketUpdateItem (EntityItem item) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream (7);
+        DataOutputStream out = new DataOutputStream (stream);
+        try {
+            out.writeByte (COMMAND_UPDATE_ITEM);
+            out.writeInt (item.entityId);
+            out.writeShort (item.item.stackSize);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        PacketDispatcher.sendPacketToAllInDimension (new Packet250CustomPayload ("magicchest", stream.toByteArray ()), 
+                item.worldObj.getWorldInfo ().getDimension ());
     }
     
     @Override
@@ -69,6 +103,10 @@ public class PacketHandler implements IPacketHandler {
             info = new InfoOpenGui ();
             break;
             
+          case COMMAND_CHEST_REQUEST_UPDATE:
+            info = new InfoChestRequestUpdate ();
+            break;
+            
           case COMMAND_CHEST_SET_FILTER_ITEM:
             info = new InfoChestSetFilterItem ();
             break;
@@ -77,12 +115,27 @@ public class PacketHandler implements IPacketHandler {
             info = new InfoChestSort ();
             break;
             
+          case COMMAND_UPDATE_ITEM:
+            ByteArrayInputStream stream = new ByteArrayInputStream (packet.data, 1, packet.data.length - 1);
+            DataInputStream in = new DataInputStream (stream);
+            try {
+                int entityId = in.readInt ();
+                int stackSize = in.readShort ();
+                Entity entity = player.worldObj.getEntityByID (entityId);
+                if (entity instanceof EntityItem) {
+                    ((EntityItem) entity).item.stackSize = stackSize;
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+            
           default:
             System.out.println ("Server Packet Error: Unknown packet id encountered!");
             return;
         }
         
-        ByteArrayInputStream stream = new ByteArrayInputStream (packet.data, 1, info.size ());
+        ByteArrayInputStream stream = new ByteArrayInputStream (packet.data, 1, packet.data.length - 1);
         DataInputStream in = new DataInputStream (stream);
         try {
             info.read (in);

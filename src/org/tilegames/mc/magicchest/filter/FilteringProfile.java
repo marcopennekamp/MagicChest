@@ -1,10 +1,13 @@
 package org.tilegames.mc.magicchest.filter;
 
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.NBTTagCompound;
+import net.minecraft.src.NBTTagList;
 
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 
 public class FilteringProfile {
+    public static final int MAX_INDEX = 30;
     public static final int ROWS = TileEntityMagicChest.INVENTORY_ROWS;
     public static final int COLUMNS = TileEntityMagicChest.INVENTORY_COLUMNS;
     public static final int SIZE = TileEntityMagicChest.INVENTORY_SIZE;
@@ -91,16 +94,16 @@ public class FilteringProfile {
      */
     public void setItem (int index, ItemStack item) {
         if (index < SIZE) setSlotItem (index, item);
-        else if (index <= 29) setRowItem (index - SIZE, item);
-        else if (index == 30) setChestItem (item);
+        else if (index < MAX_INDEX) setRowItem (index - SIZE, item);
+        else if (index == MAX_INDEX) setChestItem (item);
     }
     
     public ItemStack getItem (int index) {
         if (index < SIZE) {
             return slotItems[index];
-        }else if (index <= 29) {
+        }else if (index < MAX_INDEX) {
             return rowItems[index - SIZE];
-        }else if (index == 30) {
+        }else if (index == MAX_INDEX) {
             return chestItems[0];
         }
         return null;
@@ -113,5 +116,51 @@ public class FilteringProfile {
     public ItemStack getCacheElement (int index) {
         return cache[index];
     }
+    
+    
+    /**
+     * Get the total amount of individual filtering items.
+     */
+    public int getItemCount () {
+        int count = 0;
+        for (int i = 0; i <= MAX_INDEX; ++i) {
+            if (getItem (i) != null) ++count;
+        }
+        return count;
+    }
+    
+    
+    public void read (NBTTagCompound nbt) {
+        NBTTagList list = nbt.getTagList ("FilteringProfile");
+
+        int tagCount = list.tagCount ();
+        for (int i = 0; i < tagCount; ++i) {
+            NBTTagCompound itemTag = (NBTTagCompound) list.tagAt (i);
+            int index = itemTag.getByte ("i") & 0xFF;
+            int id = itemTag.getShort ("I");
+            int damage = itemTag.getShort ("d");
+            ItemStack stack = new ItemStack (id, 1, damage);
+            if (index >= 0 && index <= MAX_INDEX) setItem (index, stack);
+        }
+    }
+    
+    public void write (NBTTagCompound nbt) {
+        NBTTagList list = new NBTTagList();
+
+        for (int i = 0; i <= MAX_INDEX; ++i) {
+            ItemStack stack = getItem (i);
+            if (stack != null) {
+                NBTTagCompound slotTag = new NBTTagCompound ();
+                slotTag.setByte ("i", (byte) i);
+                slotTag.setShort ("I", (short) stack.itemID);
+                slotTag.setShort ("d", (short) stack.getItemDamage ());
+                list.appendTag (slotTag);
+            }
+        }
+
+        nbt.setTag ("FilteringProfile", list);
+    }
+    
+    
     
 }

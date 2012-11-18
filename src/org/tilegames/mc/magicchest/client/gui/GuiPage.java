@@ -275,7 +275,7 @@ public abstract class GuiPage extends GuiScreen {
     
     @Override
     public void drawScreen (int mouseX, int mouseY, float par3) {
-        // super.drawScreen (mouseX, mouseY, par3); /* Do NOT draw buttons the standard way! */
+        update (mouseX, mouseY);
         
         /* Draw default background. */
         drawDefaultBackground ();
@@ -325,6 +325,7 @@ public abstract class GuiPage extends GuiScreen {
     }
     
     public abstract void drawForeground ();
+    public void update (int mouseX, int mouseY) { }
     
     public Page getSelectedPage (PageButton button) { return null; }
     public abstract Page setupPages (int pageId);

@@ -45,7 +45,7 @@ public class PageSorting extends Page {
         
         String str = "Right click on the Sorting button above to sort the inventory by category!";
         final int maxWidth = gui.sizeX - 16;
-        gui.getFontRenderer ().drawSplitString (str, (gui.sizeY - maxWidth) / 2, 20, maxWidth, 0x404040);
+        gui.getFontRenderer ().drawSplitString (str, 8, 20, maxWidth, 0x404040);
         
         gui.renderHelper.drawDevelopingBanner (20);
     }

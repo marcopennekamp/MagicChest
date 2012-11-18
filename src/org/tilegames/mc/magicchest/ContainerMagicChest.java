@@ -49,7 +49,7 @@ public class ContainerMagicChest extends Container {
             if (slotId >= 27) { /* Put from player inventory into chest. */
                 slotItemStack = chestInventory.processItemStack (slotItemStack, true);
                 if (slotItemStack == null) slot.putStack (null);
-                else slot.onSlotChanged ();
+                slot.onSlotChanged ();
                 return null;
             }else { /* Put from chest into player inventory. */
                 itemStack = slotItemStack.copy ();

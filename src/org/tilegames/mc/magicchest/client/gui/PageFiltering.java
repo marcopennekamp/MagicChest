@@ -70,13 +70,16 @@ public class PageFiltering extends Page {
         ItemStack selectedItemStack = null;
         
         /* Draw slot items. */
-        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.cache, 8, 18, mouseX, mouseY, FilteringProfile.COLUMNS, FilteringProfile.ROWS, 0);
+        ItemStack tmpItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.slotItems, 8, 18, mouseX, mouseY, FilteringProfile.COLUMNS, FilteringProfile.ROWS, 0);
+        if (tmpItemStack != null) selectedItemStack = tmpItemStack;
         
         /* Draw row items. */
-        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.rowItems, 8, 76, mouseX, mouseY, FilteringProfile.ROWS, 1, 0);
+        tmpItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.rowItems, 8, 76, mouseX, mouseY, FilteringProfile.ROWS, 1, 0);
+        if (tmpItemStack != null) selectedItemStack = tmpItemStack;
         
         /* Draw chest item. */
-        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.chestItems, 152, 76, mouseX, mouseY, 1, 1, 0);
+        tmpItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.chestItems, 152, 76, mouseX, mouseY, 1, 1, 0);
+        if (tmpItemStack != null) selectedItemStack = tmpItemStack;
         
         /* Draw Tooltip. */
         if (selectedItemStack != null) { 
@@ -126,7 +129,7 @@ public class PageFiltering extends Page {
     	        PacketHandler.sendPacketOpenGui (gui.chest, GuiFilteringItemBrowser.ID, id);
     	    }else if (button == 1) {
     	        /* Clean slot. */
-    	        PacketHandler.sendPacketChestSetFilterItem (gui.chest, id, null, false);
+    	        PacketHandler.sendPacketChestSetFilterItem (gui.chest, new int[] { id }, new ItemStack[] { null }, PacketHandler.TARGET_SERVER, null);
     	    }
 	    	return true;
     	}

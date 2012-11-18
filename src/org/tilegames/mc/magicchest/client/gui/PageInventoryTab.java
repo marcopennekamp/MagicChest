@@ -42,6 +42,18 @@ public class PageInventoryTab extends Page {
     	/* Draw Background. */
     	gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/FilteringItemBrowser.png");
     	
+    	/* Draw scroll button. */
+        final double scrollFieldMax = 106 - 15;
+        double u = (194.0 + (gui.rowCount <= 6 ? 12.0 : 0.0)) / 256.0;
+        double v = 0.0;
+        double uEnd = u + 12.0 / 256.0;
+        double vEnd = v + 15.0 / 256.0;
+        double x = 174.0;
+        double y = 18.0 + (scrollFieldMax * gui.scroll);
+        double xEnd = x + 12.0;
+        double yEnd = y + 15.0;
+        gui.renderHelper.drawRectangle (x, y, xEnd, yEnd, gui.getZLevel (), u, v, uEnd, vEnd);
+    	
         /* Set Lightmap. */
         short var6 = 240;
         short var7 = 240;
@@ -49,34 +61,7 @@ public class PageInventoryTab extends Page {
         GL11.glColor4f (1.0F, 1.0F, 1.0F, 1.0F);
         
         /* Draw items. */
-        ItemStack[] items = GuiFilteringItemBrowser.items;
-        /* int start = gui.row * 9;
-        int end = (gui.row + 6) * 9;
-        if (end > items.length) end = items.length;
-        int i = start;
-        
-    	for (int y = 18; y < 18 + 18 * 6; y += 18) {
-    		for (int x = 8; x < 8 + 18 * 9; x += 18) {
-        		ItemStack stack = null;
-        		if (i < end) stack = items[i];
-        		
-        		/* Draw Item Stack. */
-        		/* if (stack != null) {
-	        		gui.setZLevel (100.0f);
-	        		gui.renderHelper.drawItemStack (stack, x, y);
-	        		gui.setZLevel (0.0f);
-        		}
-        		
-        		/* Check hover status. */
-               /* if (gui.renderHelper.pointInRectangle (x, y, 16, 16, mouseX, mouseY)) {
-                    selectedItemStack = stack;
-                    gui.renderHelper.drawHoverRectangle (x, y, 16, 16, 0x80FFFFFF);
-                }
-        		
-        		++i;
-        	}
-        } */
-        ItemStack selectedItemStack = gui.renderHelper.drawItemStacks (items, 8, 18, mouseX, mouseY, 9, 6, gui.row * 9);
+        ItemStack selectedItemStack = gui.renderHelper.drawItemStacks (GuiFilteringItemBrowser.items, 8, 18, mouseX, mouseY, 9, 6, gui.row * 9);
         
         
         /* Draw Tooltip. */
@@ -106,7 +91,7 @@ public class PageInventoryTab extends Page {
 
     	if (stack != null) {
     		/* Send item to server. */
-    	    PacketHandler.sendPacketChestSetFilterItem (gui.chest, gui.filteringSlot, stack, false);
+    	    PacketHandler.sendPacketChestSetFilterItem (gui.chest, new int [] { gui.filteringSlot }, new ItemStack[] { stack }, PacketHandler.TARGET_SERVER, null);
     	    
     		/* Open Filtering GUI. */
 	    	PacketHandler.sendPacketOpenGui (gui.chest, GuiMagicChest.ID, GuiMagicChest.PAGE_FILTERING);

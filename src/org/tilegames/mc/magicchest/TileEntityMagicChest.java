@@ -4,10 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
-import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.EntityItem;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.IInventory;
@@ -60,10 +58,21 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     public Software software;
     
+    private boolean initialized = false;
+    
     
     @Override
     public void updateEntity () {
         super.updateEntity ();
+        
+        if (!initialized) {
+            if (worldObj.isRemote) {
+                /* Request chest update. */
+                PacketHandler.sendPacketChestRequestUpdate (this);
+            }
+            
+            initialized = true;
+        }
         
         if (worldObj.isRemote) { /* Only client side. */
             /* Update Chest lid angle. */
@@ -93,8 +102,8 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         
         }
         
-        /* Soak items in. */
-        @SuppressWarnings("unchecked")
+        /* Soak items in. TODO(Marco): That functionality is for the vortex device. */
+        /* @SuppressWarnings("unchecked")
         List<EntityItem> entityList = worldObj.getEntitiesWithinAABB (EntityItem.class, 
                 AxisAlignedBB.getBoundingBox (
                         xCoord + 0.5 - pullDistance, 
@@ -107,13 +116,13 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         int size = entityList.size();
         for (int i = 0; i < size; ++i) {
             soakEntityIn (entityList.get (i));
-        }
+        } */
         
     }
     
     
     
-    
+    /*
     private void soakEntityIn (EntityItem item) {
         if (item.isDead) return;
         if (processItemStack (item.item, false) != null) return;
@@ -134,18 +143,26 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             double az = dz / distance * 0.05;
             
             /* Reduce gravity by 80%. */
-            if (dy > 0.0) ay += 0.032;
+            /* if (dy > 0.0) ay += 0.032;
             
             item.setVelocity (item.motionX + ax, item.motionY + ay, item.motionZ + az);
         }
     }
+    */
     
     public void onCollisionWithItem (EntityItem item) {
         ItemStack in = item.item;
+        int stackSizeBefore = in.stackSize;
         ItemStack out = processItemStack (in, true);
-        if (out == null) {
+        
+        if (out != null) {
+            /* Update stack size on clients. */
+            if (stackSizeBefore != out.stackSize) {
+                PacketHandler.sendPacketUpdateItem (item); 
+            }
+        }else {
             item.setDead ();
-        } /* else is implicit: Stack size was reduced. */
+        }
     }
     
     
@@ -197,11 +214,15 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
      * Checks Filtering and possibly other parameters.
      */
     public boolean canStoreItemInSlot (ItemStack stack, int slot) {
+        ItemStack filter = filteringCache.cache[slot];
+        if (filter != null) {
+            return filter.itemID == stack.itemID && filter.getItemDamage () == stack.getItemDamage ();
+        }
         return true;
     }
     
     public boolean slotHasFilter (int slot) {
-        return false;
+        return filteringCache.cache[slot] != null;
     }
     
     
@@ -400,6 +421,9 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
 
             if (id >= 0 && id < INVENTORY_SIZE) inventory[id] = ItemStack.loadItemStackFromNBT (slotTag);
         }
+        
+        /* Read filtering cache. */
+        filteringCache.read (nbt);
     }
 
     public void writeToNBT (NBTTagCompound nbt) {
@@ -416,15 +440,22 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         }
 
         nbt.setTag ("Items", list);
+        
+        filteringCache.write (nbt);
     }
     
     
     /* Networking. */
     
-    public void broadcastFilteringProfileItem (int index) {
-        if (index >= 0 && index <= 30) { /* So as not to stress network unnecessarily. But this case should not happen either. */
-            PacketHandler.sendPacketChestSetFilterItem (this, index, filteringCache.getItem (index), true);
+    public void broadcastFilteringProfileItems (int[] indices, ItemStack[] stacks) {
+        if (stacks == null) {
+            stacks = new ItemStack[indices.length];
+            for (int i = 0; i < indices.length; ++i) {
+                stacks[i] = filteringCache.getItem (indices[i]);
+            }
         }
+        
+        PacketHandler.sendPacketChestSetFilterItem (this, indices, stacks, PacketHandler.TARGET_ALL_CLIENTS, null);
     }
 
 

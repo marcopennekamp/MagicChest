@@ -3,8 +3,8 @@
   "modid": "Tilegames_MagicChest",
   "name": "Magic Chest",
   "description": "Magic Chest adds a new Chest that can accomplish much through the help of so called softwares.",
-  "version": "1.0 alpha",
-  "mcversion": "1.3.2",
+  "version": "1.0.1 alpha",
+  "mcversion": "1.4.4",
   "url": "",
   "updateUrl": "",
   "authors": [

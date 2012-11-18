@@ -12,8 +12,8 @@ public class InfoChestSetFilterItem extends InfoSlotUpdate {
         super ();
     }
     
-    public InfoChestSetFilterItem (TileEntity tileEntity, int slot, ItemStack stack) {
-        super (tileEntity, slot, stack);
+    public InfoChestSetFilterItem (TileEntity tileEntity, int[] slots, ItemStack[] stacks) {
+        super (tileEntity, slots, stacks);
     }
     
     @Override
@@ -21,11 +21,14 @@ public class InfoChestSetFilterItem extends InfoSlotUpdate {
         TileEntity entity = player.worldObj.getBlockTileEntity (x, y, z);
         if (entity != null && entity.getClass () == TileEntityMagicChest.class) {
             TileEntityMagicChest chest = (TileEntityMagicChest) entity;
-            chest.filteringCache.setItem (slot, stack);
+            
+            for (int i = 0; i < slots.length; ++i) {
+                chest.filteringCache.setItem (slots[i], stacks[i]);
+            }
             
             /* The server has to broadcast the filtering items. */
             if (!player.worldObj.isRemote) {
-                chest.broadcastFilteringProfileItem (slot);
+                chest.broadcastFilteringProfileItems (slots, stacks);
             }
         }
     }
