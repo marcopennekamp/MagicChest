@@ -76,7 +76,7 @@ public class PageInventoryTab extends Page {
         		++i;
         	}
         } */
-        ItemStack selectedItemStack = gui.renderHelper.drawItemStacks (items, 18, 8, mouseX, mouseY, 9, 6, gui.row * 9);
+        ItemStack selectedItemStack = gui.renderHelper.drawItemStacks (items, 8, 18, mouseX, mouseY, 9, 6, gui.row * 9);
         
         
         /* Draw Tooltip. */
@@ -106,12 +106,13 @@ public class PageInventoryTab extends Page {
 
     	if (stack != null) {
     		/* Send item to server. */
-    		
-    		
+    	    PacketHandler.sendPacketChestSetFilterItem (gui.chest, gui.filteringSlot, stack, false);
+    	    
     		/* Open Filtering GUI. */
-	    	PacketHandler.sendPacketOpenGui (0, GuiMagicChest.PAGE_FILTERING, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
+	    	PacketHandler.sendPacketOpenGui (gui.chest, GuiMagicChest.ID, GuiMagicChest.PAGE_FILTERING);
 	    	return true;
     	}
+    	
         return false;
     }
 

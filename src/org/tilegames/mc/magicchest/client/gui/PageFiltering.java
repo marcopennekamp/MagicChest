@@ -38,8 +38,7 @@ public class PageFiltering extends Page {
     
     @Override
     public void onPageOpen () {
-    	// PacketHandler.sendPacketOpenGui (1, 0, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
-    	
+
     }
     
     @Override
@@ -48,16 +47,18 @@ public class PageFiltering extends Page {
     	
         gui.renderHelper.bindAndDrawBackgroundTexture ("Pages/Filtering.png");
 
-        /* Draw chest filtering slot background. */
-        double u = 0.0;
-        double v = 168.0 / 256.0;
-        double uEnd = u + 32.0 / 256.0;
-        double vEnd = v + 32.0 / 256.0;
-        double x = 152.0;
-        double y = 76.0;
-        double xEnd = x + 16.0;
-        double yEnd = y + 16.0;
-        gui.renderHelper.drawRectangle (x, y, xEnd, yEnd, gui.getZLevel (), u, v, uEnd, vEnd);
+        /* Draw chest filtering slot background when no item is in there. */
+        if (gui.chest.filteringCache.chestItems[0] == null) {
+            double u = 0.0;
+            double v = 168.0 / 256.0;
+            double uEnd = u + 32.0 / 256.0;
+            double vEnd = v + 32.0 / 256.0;
+            double x = 152.0;
+            double y = 76.0;
+            double xEnd = x + 16.0;
+            double yEnd = y + 16.0;
+            gui.renderHelper.drawRectangle (x, y, xEnd, yEnd, gui.getZLevel (), u, v, uEnd, vEnd);
+        }
 
         /* Set Lightmap. */
         short var6 = 240;
@@ -69,7 +70,7 @@ public class PageFiltering extends Page {
         ItemStack selectedItemStack = null;
         
         /* Draw slot items. */
-        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.slotItems, 8, 18, mouseX, mouseY, FilteringProfile.COLUMNS, FilteringProfile.ROWS, 0);
+        selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.cache, 8, 18, mouseX, mouseY, FilteringProfile.COLUMNS, FilteringProfile.ROWS, 0);
         
         /* Draw row items. */
         selectedItemStack = gui.renderHelper.drawItemStacks (gui.chest.filteringCache.rowItems, 8, 76, mouseX, mouseY, FilteringProfile.ROWS, 1, 0);
@@ -120,10 +121,13 @@ public class PageFiltering extends Page {
     	
     	/* Slot clicked -> Open ItemBrowser. */
     	if (id != -1) {
-    		System.out.println (id);
-    		
-    		/* Open Item Browser GUI. */
-	    	PacketHandler.sendPacketOpenGui (1, id, gui.chest.xCoord, gui.chest.yCoord, gui.chest.zCoord);
+    	    if (button == 0) {
+    	        /* Open Item Browser GUI. */
+    	        PacketHandler.sendPacketOpenGui (gui.chest, GuiFilteringItemBrowser.ID, id);
+    	    }else if (button == 1) {
+    	        /* Clean slot. */
+    	        PacketHandler.sendPacketChestSetFilterItem (gui.chest, id, null, false);
+    	    }
 	    	return true;
     	}
         return false;

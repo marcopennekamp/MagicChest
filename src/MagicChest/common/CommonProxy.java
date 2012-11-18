@@ -3,10 +3,8 @@ package MagicChest.common;
 import org.tilegames.mc.magicchest.BlockMagicChest;
 
 
-public class CommonProxy {
+public abstract class CommonProxy {
     
-    public void registerGraphics (BlockMagicChest block) {
-        
-    }
+    public abstract void registerGraphics (BlockMagicChest block);
 
 }

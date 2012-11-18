@@ -10,12 +10,12 @@ public class FilteringProfile {
     public static final int SIZE = TileEntityMagicChest.INVENTORY_SIZE;
     
     /* Provides a fast method for the filter to evaluate the current item without having to deal with row or chest filtering. */
-    private ItemStack[] cache = new ItemStack[SIZE];
+    public ItemStack[] cache = new ItemStack[SIZE];
     
     /* The options for chest, row and slot filtering. */
-    public ItemStack[] chestItems = null;
-    public ItemStack[] rowItems = null;
-    public ItemStack[] slotItems = null;
+    public ItemStack[] chestItems = new ItemStack[1];
+    public ItemStack[] rowItems = new ItemStack[ROWS];
+    public ItemStack[] slotItems = new ItemStack[SIZE];
     
     
     /** 
@@ -24,16 +24,16 @@ public class FilteringProfile {
     private void updateCache (int start, int end) {
         for (int i = start; i < end; ++i) {
             /* Check for slot filtering. */
-            if (slotItems != null) {
+            {
                 ItemStack item = slotItems[i];
+                cache[i] = item; /* Clears cache simultaneously. */
                 if (item != null) {
-                    cache[i] = item;
                     continue;
                 }
             }
             
             /* Check for row filtering. */
-            if (rowItems != null) {
+            {
                 ItemStack item = rowItems[(int) (i / COLUMNS)];
                 if (item != null) {
                     cache[i] = item;
@@ -42,7 +42,7 @@ public class FilteringProfile {
             }
             
             /* Check for chest filtering. */
-            if (chestItems != null) {
+            {
             	if (chestItems[0] != null) {
             		cache[i] = chestItems[0];
             		continue;
@@ -53,34 +53,10 @@ public class FilteringProfile {
     
     
     /**
-     * Shared method for setRowItem and setSlotItem.
-     * 
-     * @return Whether the ItemStack array can be deleted.
-     */
-    private boolean setFilteringItemInArray (ItemStack[] itemArray, int itemArraySize, int index, ItemStack item) {
-        if (item == null && itemArray != null) { /* Validate if items are empty and whether they have to be saved at all. */
-            itemArray[index] = null;
-            boolean delete = true;
-            for (int i = 0; i < itemArray.length; ++i) {
-                if (itemArray[i] != null) delete = false;
-            }
-            return delete;
-        }
-        
-        if (itemArray == null) itemArray = new ItemStack[itemArraySize];
-        itemArray[index] = item;
-        
-        return false;
-    }
-    
-    
-    /**
      * Set the item for chest filtering. 
      */
     public void setChestItem (ItemStack item) {
-    	boolean delete = setFilteringItemInArray (chestItems, 1, 0, item);
-        if (delete) chestItems = null;
-    	
+        chestItems[0] = item;
         updateCache (0, SIZE);
     }
     
@@ -91,9 +67,7 @@ public class FilteringProfile {
     public void setRowItem (int row, ItemStack item) {
         if (row >= ROWS) return; /* Bounds check. */
         
-        boolean delete = setFilteringItemInArray (rowItems, ROWS, row, item);
-        if (delete) rowItems = null;
-        
+        rowItems[row] = item;
         updateCache (row * COLUMNS, (row + 1) * COLUMNS);
     }
     
@@ -104,10 +78,32 @@ public class FilteringProfile {
     public void setSlotItem (int index, ItemStack item) {
         if (index >= SIZE) return;
         
-        boolean delete = setFilteringItemInArray (slotItems, SIZE, index, item);
-        if (delete) slotItems = null;
-        
+        slotItems[index] = item;
         updateCache (index, index + 1);
+    }
+    
+    
+    /**
+     * Universal methods for slot, row and chest items.
+     * Index 0 - 26 : slot.
+     * Index 27 - 29: row.
+     * Index 30     : chest.
+     */
+    public void setItem (int index, ItemStack item) {
+        if (index < SIZE) setSlotItem (index, item);
+        else if (index <= 29) setRowItem (index - SIZE, item);
+        else if (index == 30) setChestItem (item);
+    }
+    
+    public ItemStack getItem (int index) {
+        if (index < SIZE) {
+            return slotItems[index];
+        }else if (index <= 29) {
+            return rowItems[index - SIZE];
+        }else if (index == 30) {
+            return chestItems[0];
+        }
+        return null;
     }
     
     

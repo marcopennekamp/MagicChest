@@ -17,6 +17,8 @@ import cpw.mods.fml.common.asm.SideOnly;
 public class GuiMagicChest extends GuiPage {
     public ContainerMagicChest container;
     
+    public static final int ID = 0;
+    
     public static final int PAGE_INVENTORY = 0;
     public static final int PAGE_SORTING = 1;
     public static final int PAGE_FILTERING = 2;

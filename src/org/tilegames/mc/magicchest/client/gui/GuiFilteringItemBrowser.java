@@ -16,7 +16,9 @@ import cpw.mods.fml.common.asm.SideOnly;
 
 @SideOnly (Side.CLIENT)
 public class GuiFilteringItemBrowser extends GuiPage {
-	public static ItemStack[] items;
+    public static final int ID = 1;
+
+    public static ItemStack[] items;
 	
 	private float scroll = 0.0f;
 	public int rowCount = 0;
@@ -75,7 +77,7 @@ public class GuiFilteringItemBrowser extends GuiPage {
     
     @Override
     public boolean closeGui () {
-    	PacketHandler.sendPacketOpenGui (0, 0, chest.xCoord, chest.yCoord, chest.zCoord);
+    	PacketHandler.sendPacketOpenGui (chest, GuiMagicChest.ID, GuiMagicChest.PAGE_FILTERING);
         return true;
     }
     

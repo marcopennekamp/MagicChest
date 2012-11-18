@@ -228,7 +228,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             ByteArrayOutputStream stream = new ByteArrayOutputStream (13);
             DataOutputStream out = new DataOutputStream (stream);
             try {
-                out.writeByte (PacketHandler.COMMAND_SORT);
+                out.writeByte (PacketHandler.COMMAND_CHEST_SORT);
                 out.writeInt (xCoord);
                 out.writeInt (yCoord);
                 out.writeInt (zCoord);
@@ -416,6 +416,15 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         }
 
         nbt.setTag ("Items", list);
+    }
+    
+    
+    /* Networking. */
+    
+    public void broadcastFilteringProfileItem (int index) {
+        if (index >= 0 && index <= 30) { /* So as not to stress network unnecessarily. But this case should not happen either. */
+            PacketHandler.sendPacketChestSetFilterItem (this, index, filteringCache.getItem (index), true);
+        }
     }
 
 

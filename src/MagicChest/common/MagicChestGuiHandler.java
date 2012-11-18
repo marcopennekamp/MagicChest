@@ -20,11 +20,11 @@ public class MagicChestGuiHandler implements IGuiHandler {
         if (tileEntity instanceof TileEntityMagicChest) {
             TileEntityMagicChest chest = (TileEntityMagicChest) tileEntity;
             int id = data & 0xFF;
-        	// int param = data & 0xFF00;
-            if (id == 0) { /* Magic Chest Gui. */
+        	// int param = (data >> 8) & 0xFF;
+            if (id == GuiMagicChest.ID) {
                 chest.openChest ();
                 return new ContainerMagicChest (player.inventory, chest);
-            }else if (id == 1) { /* Filtering Item Browser. */
+            }else if (id == GuiFilteringItemBrowser.ID) {
                 return new ContainerFilteringItemBrowser ();
             }
         }
@@ -38,11 +38,11 @@ public class MagicChestGuiHandler implements IGuiHandler {
         if (tileEntity instanceof TileEntityMagicChest){
             TileEntityMagicChest chest = (TileEntityMagicChest) tileEntity;
             int id = data & 0xFF;
-        	int param = data & 0xFF00;
-            if (id == 0) {
+        	int param = (data >> 8) & 0xFF;
+            if (id == GuiMagicChest.ID) {
                 chest.openChest ();
                 return new GuiMagicChest (player.inventory, chest, param);
-            }else if (id == 1) {
+            }else if (id == GuiFilteringItemBrowser.ID) {
                 return new GuiFilteringItemBrowser (chest, param);
             }
         }
