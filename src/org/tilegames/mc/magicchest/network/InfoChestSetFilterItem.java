@@ -1,8 +1,8 @@
 package org.tilegames.mc.magicchest.network;
 
-import net.minecraft.src.EntityPlayer;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.TileEntity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 

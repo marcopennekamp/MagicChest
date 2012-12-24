@@ -1,8 +1,8 @@
 package org.tilegames.mc.magicchest.filter;
 
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.NBTTagCompound;
-import net.minecraft.src.NBTTagList;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 

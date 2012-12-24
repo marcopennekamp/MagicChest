@@ -1,9 +1,9 @@
 package org.tilegames.mc.magicchest.client;
 
-import net.minecraft.src.ModelBase;
-import net.minecraft.src.ModelRenderer;
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
+import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.model.ModelRenderer;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 
 @SideOnly(Side.CLIENT)

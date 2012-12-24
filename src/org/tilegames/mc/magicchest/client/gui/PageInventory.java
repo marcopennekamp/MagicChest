@@ -1,15 +1,15 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-import net.minecraft.src.InventoryPlayer;
-import net.minecraft.src.OpenGlHelper;
-import net.minecraft.src.Slot;
-import net.minecraft.src.StatCollector;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Slot;
+import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly (Side.CLIENT)
 public class PageInventory extends Page {

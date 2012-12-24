@@ -2,7 +2,7 @@ package org.tilegames.mc.magicchest;
 
 import java.util.Comparator;
 
-import net.minecraft.src.ItemStack;
+import net.minecraft.item.ItemStack;
 
 public class ItemStackComparator implements Comparator<ItemStack> {
 

@@ -1,14 +1,14 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.OpenGlHelper;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.item.ItemStack;
 
 import org.lwjgl.opengl.GL11;
 import org.tilegames.mc.magicchest.filter.FilteringProfile;
 import org.tilegames.mc.magicchest.network.PacketHandler;
 
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly (Side.CLIENT)
 public class PageFiltering extends Page {

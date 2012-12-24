@@ -1,12 +1,12 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-import net.minecraft.src.IInventory;
+import net.minecraft.inventory.IInventory;
 
 import org.tilegames.mc.magicchest.ContainerMagicChest;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 /* Note:
  *  To make the GUI more customizable, I unfortunately had to copy (and improve 
@@ -54,7 +54,7 @@ public class GuiMagicChest extends GuiPage {
     
     public void initGui () {
         super.initGui ();
-        mc.thePlayer.craftingInventory = container;
+        mc.thePlayer.openContainer = container;
     }
     
     @Override

@@ -6,16 +6,17 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import net.minecraft.src.Entity;
-import net.minecraft.src.EntityClientPlayerMP;
-import net.minecraft.src.EntityItem;
-import net.minecraft.src.EntityPlayer;
-import net.minecraft.src.EntityPlayerMP;
-import net.minecraft.src.INetworkManager;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.Packet;
-import net.minecraft.src.Packet250CustomPayload;
-import net.minecraft.src.TileEntity;
+import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.INetworkManager;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.tileentity.TileEntity;
 import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
@@ -31,6 +32,7 @@ public class PacketHandler implements IPacketHandler {
     public static final int COMMAND_CHEST_REQUEST_UPDATE = 0x20;
     public static final int COMMAND_CHEST_SORT = 0x21;
     public static final int COMMAND_CHEST_SET_FILTER_ITEM = 0x22;
+    public static final int COMMAND_CHEST_SET_UPGRADE_ITEM = 0x23;
     
     public static final int COMMAND_UPDATE_ITEM = 0x30;
     
@@ -60,6 +62,10 @@ public class PacketHandler implements IPacketHandler {
         writePacket (COMMAND_OPEN_GUI, new InfoOpenGui (tileEntity, guiId, param), TARGET_SERVER, 0, null);
     }
     
+    public static void sendPacketChestRequestUpdate (TileEntity tileEntity) {
+        writePacket (COMMAND_CHEST_REQUEST_UPDATE, new InfoChestRequestUpdate (tileEntity), TARGET_SERVER, 0, null);
+    }
+    
     public static void sendPacketChestSort (TileEntity tileEntity) {
         writePacket (COMMAND_CHEST_SORT, new InfoChestSort (tileEntity), TARGET_SERVER, 0, null);
     }
@@ -69,8 +75,9 @@ public class PacketHandler implements IPacketHandler {
                 target, tileEntity.worldObj.getWorldInfo ().getDimension (), player);
     }
     
-    public static void sendPacketChestRequestUpdate (TileEntity tileEntity) {
-        writePacket (COMMAND_CHEST_REQUEST_UPDATE, new InfoChestRequestUpdate (tileEntity), TARGET_SERVER, 0, null);
+    public static void sendPacketChestSetUpgradeItem (TileEntity tileEntity, int index, Item item, int target, Player player) {
+        writePacket (COMMAND_CHEST_SET_UPGRADE_ITEM, new InfoChestSetUpgradeItem (tileEntity, index, item), 
+                target, tileEntity.worldObj.getWorldInfo ().getDimension (), player);
     }
     
     public static void sendPacketUpdateItem (EntityItem item) {
@@ -79,7 +86,7 @@ public class PacketHandler implements IPacketHandler {
         try {
             out.writeByte (COMMAND_UPDATE_ITEM);
             out.writeInt (item.entityId);
-            out.writeShort (item.item.stackSize);
+            out.writeShort (item.func_92014_d ()/* get item. */.stackSize);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -111,6 +118,10 @@ public class PacketHandler implements IPacketHandler {
             info = new InfoChestSetFilterItem ();
             break;
             
+          case COMMAND_CHEST_SET_UPGRADE_ITEM:
+            info = new InfoChestSetUpgradeItem ();
+            break;
+            
           case COMMAND_CHEST_SORT:
             info = new InfoChestSort ();
             break;
@@ -123,7 +134,7 @@ public class PacketHandler implements IPacketHandler {
                 int stackSize = in.readShort ();
                 Entity entity = player.worldObj.getEntityByID (entityId);
                 if (entity instanceof EntityItem) {
-                    ((EntityItem) entity).item.stackSize = stackSize;
+                    ((EntityItem) entity).func_92014_d ()/* get item. */.stackSize = stackSize; 
                 }
             }catch (IOException e) {
                 e.printStackTrace();

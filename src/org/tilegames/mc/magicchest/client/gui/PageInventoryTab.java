@@ -1,7 +1,7 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.OpenGlHelper;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.item.ItemStack;
 
 import org.lwjgl.opengl.GL11;
 import org.tilegames.mc.magicchest.network.PacketHandler;

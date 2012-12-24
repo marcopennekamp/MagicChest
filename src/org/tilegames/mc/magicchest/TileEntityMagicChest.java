@@ -6,23 +6,25 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import net.minecraft.src.EntityItem;
-import net.minecraft.src.EntityPlayer;
-import net.minecraft.src.IInventory;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.NBTTagCompound;
-import net.minecraft.src.NBTTagList;
-import net.minecraft.src.Packet250CustomPayload;
-import net.minecraft.src.TileEntity;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.tileentity.TileEntity;
 
 import org.tilegames.mc.magicchest.filter.FilteringProfile;
 import org.tilegames.mc.magicchest.network.PacketHandler;
-import org.tilegames.mc.magicchest.software.Software;
+import org.tilegames.mc.magicchest.upgrade.Upgrade;
 
 import MagicChest.common.MagicChest;
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
 import cpw.mods.fml.common.network.PacketDispatcher;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TileEntityMagicChest extends TileEntity implements IInventory {
 
@@ -43,6 +45,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     public ItemStack[] inventory = new ItemStack[INVENTORY_SIZE];
     
+    public Upgrade[] upgrades = new Upgrade[3];
     
     
     /* Filtering. */
@@ -51,12 +54,8 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     public int numUsed = 0;
     
-    public double pullDistance = 4.0;
-    
     public boolean isChestFull = false; /* When the chest is COMPLETELY full (all slots filled with maximum size stacks. */
     
-    
-    public Software software;
     
     private boolean initialized = false;
     
@@ -99,59 +98,19 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
                     
                 }
             }
-        
         }
         
-        /* Soak items in. TODO(Marco): That functionality is for the vortex device. */
-        /* @SuppressWarnings("unchecked")
-        List<EntityItem> entityList = worldObj.getEntitiesWithinAABB (EntityItem.class, 
-                AxisAlignedBB.getBoundingBox (
-                        xCoord + 0.5 - pullDistance, 
-                        yCoord + 0.5 - pullDistance, 
-                        zCoord + 0.5 - pullDistance, 
-                        xCoord + 0.5 + pullDistance, 
-                        yCoord + 0.5 + pullDistance, 
-                        zCoord + 0.5 + pullDistance
-                ));
-        int size = entityList.size();
-        for (int i = 0; i < size; ++i) {
-            soakEntityIn (entityList.get (i));
-        } */
-        
-    }
-    
-    
-    
-    /*
-    private void soakEntityIn (EntityItem item) {
-        if (item.isDead) return;
-        if (processItemStack (item.item, false) != null) return;
-        
-        final double offsetX = 0.5;
-        final double offsetY = 0.5;
-        final double offsetZ = 0.5;
-        
-        double dx = (xCoord + offsetX) - item.posX;
-        double dy = (yCoord + offsetY) - item.posY;
-        double dz = (zCoord + offsetZ) - item.posZ;
-        double distance = dx * dx + dy * dy + dz * dz;
-        double pullDistanceSquared = pullDistance * pullDistance;
-        
-        if (distance <= pullDistanceSquared) {
-            double ax = dx / distance * 0.05;
-            double ay = dy / distance * 0.05; 
-            double az = dz / distance * 0.05;
-            
-            /* Reduce gravity by 80%. */
-            /* if (dy > 0.0) ay += 0.032;
-            
-            item.setVelocity (item.motionX + ax, item.motionY + ay, item.motionZ + az);
+        for (int i = 0; i < upgrades.length; ++i) {
+            Upgrade upgrade = upgrades[i];
+            if (upgrade != null) {
+                upgrade.update ();
+            }
         }
     }
-    */
+    
     
     public void onCollisionWithItem (EntityItem item) {
-        ItemStack in = item.item;
+        ItemStack in = item.func_92014_d (); /* get item */
         int stackSizeBefore = in.stackSize;
         ItemStack out = processItemStack (in, true);
         
@@ -171,6 +130,9 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         return processItemStack (inventory, stack, storeItem, false);
     }
     
+    /**
+     * @return The rest of the stack.
+     */
     public ItemStack processItemStack (ItemStack[] array, ItemStack stack, boolean storeItem, boolean ignoreFilteredSlots) {
         int stackSize = stack.stackSize;
         
@@ -209,6 +171,32 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         return stack;
     }
     
+    /**
+     * Note: 'stack' will be modified (So you might need to use stack.copy () before).
+     */
+    public ItemStack removeItemStack (ItemStack stack) {
+        for (int i = 0; i < INVENTORY_SIZE; ++i) {
+            ItemStack slot = getStackInSlot (i);
+            if (slot != null && slot.isItemEqual (stack)) {
+                if (slot.stackSize > stack.stackSize) {
+                    slot.stackSize -= stack.stackSize;
+                    stack = null;
+                    break;
+                }else {
+                    stack.stackSize -= slot.stackSize;
+                    setInventorySlotContents (i, null);
+                    if (stack.stackSize == 0) {
+                        stack = null;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        onInventoryChanged ();
+        return stack;
+    }
+     
     
     /*
      * Checks Filtering and possibly other parameters.
@@ -296,37 +284,81 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     /* Inventory Functions. */
     
+    /**
+     * @return Whether the upgrade has been set.
+     */
+    public boolean setUpgrade (int index, Upgrade upgrade, InventoryPlayer playerInventory) {
+        /* Don't set the upgrade when it is already set somewhere. */
+        if (upgrade != null && hasUpgrade (upgrade.item)) return false;
+        
+        Upgrade before = upgrades[index];
+        if (before != null) {
+            ItemStack stack = before.stackCache;
+            if (processItemStack (stack, true) != null) {
+                /* Try to put it in a player slot. */
+                if (!playerInventory.addItemStackToInventory (stack)) {
+                    return false;
+                }
+            }
+        }
+        
+        upgrades[index] = upgrade;
+        return true;
+    }
+    
+    public boolean hasUpgrade (Item item) {
+        for (int i = 0; i < upgrades.length; ++i) {
+            Upgrade upgrade = upgrades[i];
+            if (upgrade != null && upgrade.item.shiftedIndex == item.shiftedIndex) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void dropItems () {
+        /* Drop items. */
         for (int i = 0; i < INVENTORY_SIZE; ++i) {
             ItemStack stack = getStackInSlot (i);
-
             if (stack != null) {
-                float x = random.nextFloat () * 0.8F + 0.1F;
-                float y = random.nextFloat () * 0.8F + 0.1F;
-                EntityItem item;
+                dropItem (stack);
+            }
+        }
+        
+        /* Drop upgrades. */
+        for (int i = 0; i < upgrades.length; ++i) {
+            Upgrade upgrade = upgrades[i];
+            if (upgrade != null) {
+                dropItem (upgrade.stackCache);
+            }
+        }
+    }
+    
+    private void dropItem (ItemStack stack) {
+        float x = random.nextFloat () * 0.8F + 0.1F;
+        float y = random.nextFloat () * 0.8F + 0.1F;
+        EntityItem item;
 
-                for (float z = random.nextFloat () * 0.8F + 0.1F; stack.stackSize > 0; worldObj.spawnEntityInWorld (item)) {
-                    int size = random.nextInt (21) + 10;
+        for (float z = random.nextFloat () * 0.8F + 0.1F; stack.stackSize > 0; worldObj.spawnEntityInWorld (item)) {
+            int size = random.nextInt (21) + 10;
 
-                    if (size > stack.stackSize) {
-                        size = stack.stackSize;
-                    }
+            if (size > stack.stackSize) {
+                size = stack.stackSize;
+            }
 
-                    stack.stackSize -= size;
-                    item = new EntityItem (worldObj, 
-                            (double) ((float) xCoord + x), 
-                            (double) ((float) yCoord + y), 
-                            (double) ((float) zCoord + z), 
-                            new ItemStack (stack.itemID, size, stack.getItemDamage ()));
-                    float time = 0.05F;
-                    item.motionX = (double) ((float) random.nextGaussian() * time);
-                    item.motionY = (double) ((float) random.nextGaussian() * time + 0.2F);
-                    item.motionZ = (double) ((float) random.nextGaussian() * time);
+            stack.stackSize -= size;
+            item = new EntityItem (worldObj, 
+                    (double) ((float) xCoord + x), 
+                    (double) ((float) yCoord + y), 
+                    (double) ((float) zCoord + z), 
+                    new ItemStack (stack.itemID, size, stack.getItemDamage ()));
+            float time = 0.05F;
+            item.motionX = (double) ((float) random.nextGaussian() * time);
+            item.motionY = (double) ((float) random.nextGaussian() * time + 0.2F);
+            item.motionZ = (double) ((float) random.nextGaussian() * time);
 
-                    if (stack.hasTagCompound ()) {
-                        item.item.setTagCompound ((NBTTagCompound) stack.getTagCompound ().copy ());
-                    }
-                }
+            if (stack.hasTagCompound ()) {
+                item.func_92014_d ()/* get item */.setTagCompound ((NBTTagCompound) stack.getTagCompound ().copy ());
             }
         }
     }
@@ -424,6 +456,17 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         
         /* Read filtering cache. */
         filteringCache.read (nbt);
+        
+        /* Read upgrades. */
+        NBTTagList upgradeTagList = nbt.getTagList ("Upgrades");
+        int upgradeTagCount = upgradeTagList.tagCount ();
+        for (int i = 0; i < upgradeTagCount; ++i) {
+            NBTTagCompound tag = (NBTTagCompound) upgradeTagList.tagAt (i);
+            ItemUpgrade item = (ItemUpgrade) Item.itemsList[tag.getShort ("item")];
+            Upgrade upgrade = item.getUpgradeObject (this);
+            upgrade.read (tag);
+            upgrades[tag.getByte ("id")] = upgrade;
+        }
     }
 
     public void writeToNBT (NBTTagCompound nbt) {
@@ -441,7 +484,22 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
 
         nbt.setTag ("Items", list);
         
+        /* Write filtering cache. */
         filteringCache.write (nbt);
+        
+        /* Write upgrades. */
+        NBTTagList upgradeTagList = new NBTTagList ();
+        for (int i = 0; i < upgrades.length; ++i) {
+            Upgrade upgrade = upgrades[i];
+            if (upgrade != null) {
+                NBTTagCompound tag = new NBTTagCompound ();
+                tag.setByte ("id", (byte) i);
+                tag.setShort ("item", (short) upgrade.item.shiftedIndex);
+                upgrade.write (tag);
+                upgradeTagList.appendTag (tag);
+            }
+        }
+        nbt.setTag ("Upgrades", upgradeTagList);
     }
     
     
@@ -458,5 +516,10 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
         PacketHandler.sendPacketChestSetFilterItem (this, indices, stacks, PacketHandler.TARGET_ALL_CLIENTS, null);
     }
 
+    public void broadcastUpgradeSlot (int index) {
+        Upgrade upgrade = upgrades[index];
+        ItemUpgrade item = (upgrade == null) ? null : upgrade.item;
+        PacketHandler.sendPacketChestSetUpgradeItem (this, index, item, PacketHandler.TARGET_ALL_CLIENTS, null);
+    }
 
 }

@@ -4,7 +4,7 @@
  *  copyright 2012 Marco "Aero96" Pennekamp. All rights reserved.
  * 
  *  Contact:
- *      E-Mail:     marco.pennekamp@unitybox.de
+ *      E-Mail:     marco.pennekamp96@gmail.com
  *      Internet:   http://tilegames.org/
  *      Twitter:    @marcopennekamp
  * 
@@ -12,14 +12,16 @@
 
 package MagicChest.common;
 
-import net.minecraft.src.Block;
-import net.minecraft.src.Item;
-import net.minecraft.src.ItemStack;
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 import org.tilegames.mc.magicchest.BlockMagicChest;
 import org.tilegames.mc.magicchest.ItemBlockMagicChest;
+import org.tilegames.mc.magicchest.ItemUpgrade;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 import org.tilegames.mc.magicchest.network.PacketHandler;
+import org.tilegames.mc.magicchest.upgrade.UpgradeVortexDevice;
 
 import MagicChest.client.ClientProxy;
 import cpw.mods.fml.common.Mod;
@@ -32,7 +34,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
 
-@Mod (modid = "Tilegames_MagicChest", name = "MagicChest", version = "1.0.1 alpha")
+@Mod (modid = "Tilegames_MagicChest", name = "MagicChest", version = "1.0.2 alpha")
 @NetworkMod (clientSideRequired = true, serverSideRequired = false)
 public class MagicChest {
     
@@ -47,16 +49,23 @@ public class MagicChest {
     
     public BlockMagicChest blockMagicChest;
     
+    public ItemUpgrade upgradeVortexDevice;
+    
 
     @Init
     public void load (FMLInitializationEvent event) {
         instance = this;
         
+        /* Magic Chest Block. */
         blockMagicChest = new BlockMagicChest (2000);
         blockMagicChest.setBlockName ("magicchest");
         blockMagicChest.setStepSound (Block.soundWoodFootstep);
         blockMagicChest.setHardness (1.0f);
         blockMagicChest.setResistance (1.0f);
+        
+        /* Upgrades. */
+        upgradeVortexDevice = new ItemUpgrade (16660, UpgradeVortexDevice.class);
+        upgradeVortexDevice.setItemName ("magicchest.upgrade.vortexdevice");
         
         GameRegistry.addRecipe (new ItemStack (blockMagicChest, 1, 0), new Object[] {
             "000", "R R", "000", '0', new ItemStack (Block.planks, 1, 0), 'R', Item.redstone
@@ -71,10 +80,11 @@ public class MagicChest {
             "000", "R R", "000", '0', new ItemStack (Block.planks, 1, 3), 'R', Item.redstone
         });
         
-        GameRegistry.registerBlock (blockMagicChest, ItemBlockMagicChest.class);
+        GameRegistry.registerBlock (blockMagicChest, ItemBlockMagicChest.class, "magicchest");
         GameRegistry.registerTileEntity (TileEntityMagicChest.class, "MagicChest");
         
         LanguageRegistry.addName (blockMagicChest, "Magic Chest");
+        LanguageRegistry.addName (upgradeVortexDevice, "Vortex Device");
         
         NetworkRegistry.instance ().registerGuiHandler (this, new MagicChestGuiHandler ());
         NetworkRegistry.instance ().registerChannel (new PacketHandler (), "magicchest");

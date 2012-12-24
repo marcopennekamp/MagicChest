@@ -1,13 +1,13 @@
 package org.tilegames.mc.magicchest.network;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 import org.tilegames.mc.magicchest.filter.FilteringProfile;
 
 import cpw.mods.fml.common.network.Player;
-
-import net.minecraft.src.EntityPlayer;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.TileEntity;
 
 public class InfoChestRequestUpdate extends Info {
 
@@ -38,6 +38,13 @@ public class InfoChestRequestUpdate extends Info {
                 }
             }
             PacketHandler.sendPacketChestSetFilterItem (chest, indices, stacks, PacketHandler.TARGET_PLAYER, (Player) player);
+            
+            /* Broadcast upgrade items. */
+            for (int i = 0; i < chest.upgrades.length; ++i) {
+                if (chest.upgrades[i] != null) {
+                    chest.broadcastUpgradeSlot (i);
+                }
+            }
         }
     }
 

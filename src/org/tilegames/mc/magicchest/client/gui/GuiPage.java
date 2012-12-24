@@ -4,22 +4,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.RenderEngine;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.tilegames.mc.magicchest.TileEntityMagicChest;
 
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.FontRenderer;
-import net.minecraft.src.GuiScreen;
-import net.minecraft.src.InventoryPlayer;
-import net.minecraft.src.ItemStack;
-import net.minecraft.src.RenderEngine;
-import net.minecraft.src.RenderItem;
-import net.minecraft.src.Slot;
-import net.minecraft.src.Tessellator;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly (Side.CLIENT)
 public abstract class GuiPage extends GuiScreen {
@@ -43,7 +43,11 @@ public abstract class GuiPage extends GuiScreen {
     /* All the pages. */
     public List<Page> pages = new ArrayList<Page> ();
     
+    /* An optional overlay. */
+    public OverlayItemSelect overlay = null;
+    
     public TileEntityMagicChest chest;
+    
     
     public class RenderHelper {
         
@@ -100,7 +104,7 @@ public abstract class GuiPage extends GuiScreen {
         
         public void drawTooltip (ItemStack stack, int x, int y) {
             GL11.glDisable (GL12.GL_RESCALE_NORMAL);
-            net.minecraft.src.RenderHelper.disableStandardItemLighting ();
+            net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting ();
             GL11.glDisable (GL11.GL_LIGHTING);
             GL11.glDisable (GL11.GL_DEPTH_TEST);
             
@@ -176,14 +180,20 @@ public abstract class GuiPage extends GuiScreen {
             drawRectangle (x, y, xEnd, yEnd, z, u, v, uEnd, vEnd);
             
             if (state != PageButton.STATE_NORMAL) {
+                boolean draw = true;
                 int color;
                 if (state == PageButton.STATE_HOVER) { /* HOVER */
                     color = 0x20FFFFFF;
+                    /* Overlay disables button click, so a hover effect is generally not desired. */
+                    if (overlay != null) { 
+                        draw = false;
+                    }
                 }else { /* ACTIVE */
                     color = 0x40FFFFFF;
                 }
                 
-                drawHoverRectangle (x, y, PageButton.WIDTH, PageButton.HEIGHT, color);
+                if (draw)
+                    drawHoverRectangle (x, y, PageButton.WIDTH, PageButton.HEIGHT, color);
             }
         }
         
@@ -273,6 +283,9 @@ public abstract class GuiPage extends GuiScreen {
         offsetY = (height - sizeY) / 2;
     }
     
+    
+
+    
     @Override
     public void drawScreen (int mouseX, int mouseY, float par3) {
         update (mouseX, mouseY);
@@ -281,11 +294,11 @@ public abstract class GuiPage extends GuiScreen {
         drawDefaultBackground ();
         
         /* Prepare rendering. */
-        net.minecraft.src.RenderHelper.disableStandardItemLighting ();
+        net.minecraft.client.renderer.RenderHelper.disableStandardItemLighting ();
         GL11.glDisable (GL11.GL_LIGHTING);
         // GL11.glDisable (GL11.GL_DEPTH_TEST);
         
-        net.minecraft.src.RenderHelper.enableGUIStandardItemLighting ();
+        net.minecraft.client.renderer.RenderHelper.enableGUIStandardItemLighting ();
         GL11.glEnable (GL12.GL_RESCALE_NORMAL);
         
         GL11.glPushMatrix ();
@@ -317,11 +330,14 @@ public abstract class GuiPage extends GuiScreen {
         /* Render page. */
         page.draw (mouseX, mouseY);
         
+        /* Render overlay. */
+        if (overlay != null) overlay.draw (mouseX, mouseY);
+        
         /* Rendering cleanup. */
         GL11.glPopMatrix();
         GL11.glEnable (GL11.GL_LIGHTING);
         GL11.glEnable (GL11.GL_DEPTH_TEST);
-        net.minecraft.src.RenderHelper.enableStandardItemLighting ();
+        net.minecraft.client.renderer.RenderHelper.enableStandardItemLighting ();
     }
     
     public abstract void drawForeground ();
@@ -352,17 +368,33 @@ public abstract class GuiPage extends GuiScreen {
     protected void mouseClicked (int x, int y, int mouseButton) {
         super.mouseClicked (x, y, mouseButton);
         
-        /* Check icon buttons. */
-        int size = pageButtons.size ();
-        for (int i = 0; i < size; ++i) {
-            PageButton button = pageButtons.get (i);
-            if (button.inBounds (x - offsetX, y - offsetY)) {
-                onPageButtonClick (button, mouseButton);
+        /* Click overlay if existing or close it if clicking outside. */
+        if (overlay != null) {
+            /* Close overlay. */
+            int xAtOffset = x - offsetX;
+            int yAtOffset = y - offsetY;
+            if (xAtOffset < overlay.x || xAtOffset >= overlay.x + overlay.sizeX || yAtOffset < overlay.y || yAtOffset >= overlay.y + overlay.sizeY) {
+                overlay = null;
+                return;
+            }else {
+                if (overlay.onClick (xAtOffset, yAtOffset, mouseButton)) {
+                    overlay = null;
+                }
                 return;
             }
+        }else {
+            /* Check icon buttons. */
+            int size = pageButtons.size ();
+            for (int i = 0; i < size; ++i) {
+                PageButton button = pageButtons.get (i);
+                if (button.inBounds (x - offsetX, y - offsetY)) {
+                    onPageButtonClick (button, mouseButton);
+                    return;
+                }
+            }
+            
+            page.onClick (x, y, mouseButton);
         }
-        
-        page.onClick (x, y, mouseButton);
     }
     
     @Override
@@ -395,7 +427,12 @@ public abstract class GuiPage extends GuiScreen {
     @Override
     public void updateScreen () {
         super.updateScreen ();
-        if (!mc.thePlayer.isEntityAlive () || mc.thePlayer.isDead) mc.thePlayer.closeScreen();
+        if (!mc.thePlayer.isEntityAlive () || mc.thePlayer.isDead) {
+            mc.thePlayer.closeScreen();
+            return;
+        }
+        
+        page.tick ();
     }
     
     

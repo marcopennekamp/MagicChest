@@ -1,6 +1,6 @@
 package org.tilegames.mc.magicchest;
 
-import net.minecraft.src.ItemBlock;
+import net.minecraft.item.ItemBlock;
 
 public class ItemBlockMagicChest extends ItemBlock {
 

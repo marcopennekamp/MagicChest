@@ -1,7 +1,7 @@
 package org.tilegames.mc.magicchest.client.gui;
 
-import cpw.mods.fml.common.Side;
-import cpw.mods.fml.common.asm.SideOnly;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly (Side.CLIENT)
 public abstract class Page {
@@ -24,6 +24,7 @@ public abstract class Page {
     
     public boolean onPageButtonRightClick () { return false; }
     
+    public void tick () { }
     public void onPageOpen () { }
     public void onPageClose () { }
     
