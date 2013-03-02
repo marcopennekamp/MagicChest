@@ -86,7 +86,7 @@ public class PacketHandler implements IPacketHandler {
         try {
             out.writeByte (COMMAND_UPDATE_ITEM);
             out.writeInt (item.entityId);
-            out.writeShort (item.func_92014_d ()/* get item. */.stackSize);
+            out.writeShort (item.getEntityItem ().stackSize);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -134,7 +134,7 @@ public class PacketHandler implements IPacketHandler {
                 int stackSize = in.readShort ();
                 Entity entity = player.worldObj.getEntityByID (entityId);
                 if (entity instanceof EntityItem) {
-                    ((EntityItem) entity).func_92014_d ()/* get item. */.stackSize = stackSize; 
+                    ((EntityItem) entity).getEntityItem ().stackSize = stackSize; 
                 }
             }catch (IOException e) {
                 e.printStackTrace();

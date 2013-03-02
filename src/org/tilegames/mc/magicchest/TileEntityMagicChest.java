@@ -110,7 +110,9 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     
     
     public void onCollisionWithItem (EntityItem item) {
-        ItemStack in = item.func_92014_d (); /* get item */
+        if (item.isDead) return;
+        
+        ItemStack in = item.getEntityItem ();
         int stackSizeBefore = in.stackSize;
         ItemStack out = processItemStack (in, true);
         
@@ -309,7 +311,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
     public boolean hasUpgrade (Item item) {
         for (int i = 0; i < upgrades.length; ++i) {
             Upgrade upgrade = upgrades[i];
-            if (upgrade != null && upgrade.item.shiftedIndex == item.shiftedIndex) {
+            if (upgrade != null && upgrade.item.itemID == item.itemID) {
                 return true;
             }
         }
@@ -358,7 +360,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             item.motionZ = (double) ((float) random.nextGaussian() * time);
 
             if (stack.hasTagCompound ()) {
-                item.func_92014_d ()/* get item */.setTagCompound ((NBTTagCompound) stack.getTagCompound ().copy ());
+                item.getEntityItem ().setTagCompound ((NBTTagCompound) stack.getTagCompound ().copy ());
             }
         }
     }
@@ -494,7 +496,7 @@ public class TileEntityMagicChest extends TileEntity implements IInventory {
             if (upgrade != null) {
                 NBTTagCompound tag = new NBTTagCompound ();
                 tag.setByte ("id", (byte) i);
-                tag.setShort ("item", (short) upgrade.item.shiftedIndex);
+                tag.setShort ("item", (short) upgrade.item.itemID);
                 upgrade.write (tag);
                 upgradeTagList.appendTag (tag);
             }

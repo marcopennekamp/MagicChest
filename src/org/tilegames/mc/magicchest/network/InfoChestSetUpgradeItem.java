@@ -31,7 +31,7 @@ public class InfoChestSetUpgradeItem extends Info {
     public void write (DataOutputStream out) throws IOException {
         super.write (out);
         out.writeByte (index);
-        out.writeShort ((item == null) ? 0 : item.shiftedIndex);
+        out.writeShort ((item == null) ? 0 : item.itemID);
     }
     
     @Override
@@ -77,7 +77,7 @@ public class InfoChestSetUpgradeItem extends Info {
                         /* Try to take out of chest inventory. */
                         if (chest.removeItemStack (upgrade.stackCache.copy ()) != null) {
                             /* Take out of player inventory. */
-                            player.inventory.consumeInventoryItem (item.shiftedIndex);
+                            player.inventory.consumeInventoryItem (item.itemID);
                             player.inventory.onInventoryChanged ();
                         }
                     }

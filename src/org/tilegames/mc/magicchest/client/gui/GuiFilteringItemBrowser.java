@@ -40,7 +40,7 @@ public class GuiFilteringItemBrowser extends GuiPage {
     			Item item = itemList[i];
     			if (item != null) {
     				if (item.getCreativeTab () != null)
-    					item.getSubItems (item.shiftedIndex, CreativeTabs.tabAllSearch, itemArrayList);
+    					item.getSubItems (item.itemID, CreativeTabs.tabAllSearch, itemArrayList);
     			}
     		}
     		rowCount = (int) Math.ceil (itemArrayList.size () / 9.0f);

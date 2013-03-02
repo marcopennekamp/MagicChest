@@ -15,6 +15,7 @@ package MagicChest.common;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.Configuration;
 
 import org.tilegames.mc.magicchest.BlockMagicChest;
 import org.tilegames.mc.magicchest.ItemBlockMagicChest;
@@ -26,8 +27,10 @@ import org.tilegames.mc.magicchest.upgrade.UpgradeVortexDevice;
 import MagicChest.client.ClientProxy;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.Init;
+import cpw.mods.fml.common.Mod.PreInit;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -51,6 +54,14 @@ public class MagicChest {
     
     public ItemUpgrade upgradeVortexDevice;
     
+    @PreInit
+    public void preInit (FMLPreInitializationEvent event) {
+        /* Apply configuration file. */
+        Configuration config = new Configuration (event.getSuggestedConfigurationFile ());
+        config.load ();
+        UpgradeVortexDevice.pullDistance = config.get (Configuration.CATEGORY_GENERAL, "VortexDevice_PullDistance", 4.0).getDouble (4.0);
+        config.save ();
+    }
 
     @Init
     public void load (FMLInitializationEvent event) {
@@ -91,5 +102,4 @@ public class MagicChest {
         
         proxy.registerGraphics (blockMagicChest);
     }
-    
 }

@@ -7,7 +7,7 @@ import net.minecraft.util.AxisAlignedBB;
 
 public class UpgradeVortexDevice extends Upgrade {
 
-    public double pullDistance = 4.0; /* TODO(Marco): Create option to change the pull distance. */
+    public static double pullDistance;
     
     @Override
     public void update () {
@@ -30,7 +30,10 @@ public class UpgradeVortexDevice extends Upgrade {
     
     private void soakEntityIn (EntityItem item) {
         if (item.isDead) return;
-        if (chest.processItemStack (item.func_92014_d (), false) != null) return;
+        if (chest.processItemStack (item.getEntityItem (), false) != null) {
+            item.setDead ();
+            return;
+        }
         
         final double offsetX = 0.5;
         final double offsetY = 0.5;
